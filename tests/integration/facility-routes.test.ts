@@ -3,7 +3,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 // Exercises the V2 route handlers end-to-end against the in-memory repository in local auth mode.
 const A = "33333333-3333-4333-8333-333333333333";
 const B = "44444444-4444-4444-8444-444444444444";
-const FACILITY = "phc-kalapur";
+const FACILITY = "phc-nazirabad";
 
 type Routes = {
   session: typeof import("@/app/api/session/route");

@@ -177,6 +177,17 @@ export const en = {
   "assistant.fb.transfers": "Stock that can be moved:",
   "assistant.fb.none": "Nothing is flagged for that right now.",
   "assistant.transferLine": "{from} can send {qty} {unit} of {medicine} to {to}",
+  "greet.title": "Namaste, {district}",
+  "greet.status": "{count} of {total} centres need a hand today.",
+  "greet.calm": "Every centre is steady today.",
+  "greet.prompt": "Ask me anything about {district}.",
+  "assistant.label": "nabz assistant",
+  "gauge.title": "Patients today",
+  "gauge.usual": "Usually about {n}",
+  "gauge.low": "30-day low",
+  "gauge.high": "30-day high",
+  "matrix.title": "Centre health matrix",
+  "matrix.footfall": "District patients, last {days} days",
 } as const;
 
 export type MessageKey = keyof typeof en;

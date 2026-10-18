@@ -3,7 +3,7 @@ import { buildSeedFacilities } from "@/domain/seed";
 import { createMemoryRepository } from "@/lib/data/repository";
 import { AppError } from "@/lib/errors/app-error";
 
-const FACILITY = "phc-kalapur";
+const FACILITY = "phc-nazirabad";
 
 async function setup() {
   const repo = createMemoryRepository();

@@ -2,11 +2,11 @@
 
 District healthcare operations intelligence for Primary and Community Health Centres (PHCs/CHCs). It tracks medicine stock, patient footfall, beds, doctor attendance and diagnostic availability, then flags which facilities need attention and why.
 
-> **Status: V3 complete, V4 in progress.** All data is synthetic and fictional. See [plan.md](plan.md) for what is implemented and what is planned.
+> **Status: V3 complete, V4 in progress.** The district is Bhopal and centres are named after real Bhopal localities, but every figure is synthetic sample data. See [plan.md](plan.md) for what is implemented and what is planned.
 
 ## What works today
 
-- **Three tabs:** Overview (district pulse, 3D map, who needs a hand, most-burdened centres), Centres (filterable directory), Transfers (suggested moves and the approval workflow)
+- **Three tabs:** Overview (bento grid: greeting tile that doubles as the AI assistant, patients-today gauge, centre health matrix, 3D map, who needs a hand, most-burdened centres), Centres (filterable directory), Transfers (suggested moves and the approval workflow)
 - **Seven languages:** English, हिन्दी, বাংলা, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, switchable from the header; risk alerts are rendered from codes so they translate too
 - **Ask nabz:** a chat assistant that answers questions about the district in the selected language, using only your session's data; Gemini first, Cerebras fallback, and a computed answer if AI is unavailable
 - **Cross-centre transfers:** nabz pairs centres about to run out with centres that can safely spare stock, explains why, and runs a human-approved workflow (approve holds stock, dispatch removes it, receipt adds it)

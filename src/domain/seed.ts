@@ -6,7 +6,7 @@ import type { DiagnosticTest, District, Facility, FacilityType, MedicineStock } 
  */
 
 export const SEED_HISTORY_DAYS = 30;
-export const SEED_DISTRICT_ID = "vellora";
+export const SEED_DISTRICT_ID = "bhopal";
 
 type Profile = "healthy" | "surplus" | "stockout" | "beds" | "staffing" | "diagnostics";
 
@@ -20,18 +20,18 @@ interface FacilitySpec {
 }
 
 const SPECS: readonly FacilitySpec[] = [
-  { id: "chc-ashwini-nagar", name: "CHC Ashwini Nagar", type: "CHC", block: "North Block", profile: "surplus" },
-  { id: "chc-devgarh", name: "CHC Devgarh", type: "CHC", block: "River Block", profile: "beds" },
-  { id: "chc-sonpur-ghat", name: "CHC Sonpur Ghat", type: "CHC", block: "Hill Block", profile: "healthy" },
-  { id: "phc-kalapur", name: "PHC Kalapur", type: "PHC", block: "North Block", hub: "chc-ashwini-nagar", profile: "stockout" },
-  { id: "phc-meghwadi", name: "PHC Meghwadi", type: "PHC", block: "North Block", hub: "chc-ashwini-nagar", profile: "healthy" },
-  { id: "phc-tilakpura", name: "PHC Tilakpura", type: "PHC", block: "North Block", hub: "chc-ashwini-nagar", profile: "staffing" },
-  { id: "phc-ranikhet-mod", name: "PHC Ranikhet Mod", type: "PHC", block: "River Block", hub: "chc-devgarh", profile: "diagnostics" },
-  { id: "phc-baghola", name: "PHC Baghola", type: "PHC", block: "River Block", hub: "chc-devgarh", profile: "healthy" },
-  { id: "phc-chandrapur", name: "PHC Chandrapur", type: "PHC", block: "River Block", hub: "chc-devgarh", profile: "stockout" },
-  { id: "phc-jhilmil", name: "PHC Jhilmil", type: "PHC", block: "Hill Block", hub: "chc-sonpur-ghat", profile: "surplus" },
-  { id: "phc-pahadganj", name: "PHC Pahadganj", type: "PHC", block: "Hill Block", hub: "chc-sonpur-ghat", profile: "healthy" },
-  { id: "phc-neelkanth", name: "PHC Neelkanth", type: "PHC", block: "Hill Block", hub: "chc-sonpur-ghat", profile: "beds" },
+  { id: "chc-berasia", name: "CHC Berasia", type: "CHC", block: "Berasia", profile: "surplus" },
+  { id: "chc-bairagarh", name: "CHC Bairagarh", type: "CHC", block: "Huzur", profile: "beds" },
+  { id: "chc-phanda", name: "CHC Phanda", type: "CHC", block: "Phanda", profile: "healthy" },
+  { id: "phc-nazirabad", name: "PHC Nazirabad", type: "PHC", block: "Berasia", hub: "chc-berasia", profile: "stockout" },
+  { id: "phc-gunga", name: "PHC Gunga", type: "PHC", block: "Berasia", hub: "chc-berasia", profile: "healthy" },
+  { id: "phc-islamnagar", name: "PHC Islamnagar", type: "PHC", block: "Berasia", hub: "chc-berasia", profile: "staffing" },
+  { id: "phc-kolar", name: "PHC Kolar", type: "PHC", block: "Huzur", hub: "chc-bairagarh", profile: "diagnostics" },
+  { id: "phc-gandhi-nagar", name: "PHC Gandhi Nagar", type: "PHC", block: "Huzur", hub: "chc-bairagarh", profile: "healthy" },
+  { id: "phc-misrod", name: "PHC Misrod", type: "PHC", block: "Huzur", hub: "chc-bairagarh", profile: "stockout" },
+  { id: "phc-ratibad", name: "PHC Ratibad", type: "PHC", block: "Phanda", hub: "chc-phanda", profile: "surplus" },
+  { id: "phc-khajuri-kalan", name: "PHC Khajuri Kalan", type: "PHC", block: "Phanda", hub: "chc-phanda", profile: "healthy" },
+  { id: "phc-bilkhiriya", name: "PHC Bilkhiriya", type: "PHC", block: "Phanda", hub: "chc-phanda", profile: "beds" },
 ];
 
 const MEDICINES = [
@@ -128,7 +128,7 @@ function buildDiagnostics(spec: FacilitySpec, rng: () => number): DiagnosticTest
 }
 
 export function buildSeedDistrict(historyEndDate: string): District {
-  return { id: SEED_DISTRICT_ID, name: "Vellora District", synthetic: true, historyEndDate };
+  return { id: SEED_DISTRICT_ID, name: "Bhopal District", synthetic: true, historyEndDate };
 }
 
 export function buildSeedFacilities(updatedAt: string): Facility[] {
