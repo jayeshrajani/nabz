@@ -4,29 +4,25 @@ import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { AssessedFacility } from "@/domain/district";
+import { useI18n } from "@/i18n/provider";
 
 const RANK = { critical: 0, warning: 1, healthy: 2 } as const;
 
 export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFacility[]; onSelect: (id: string) => void }) {
+  const { t, signal } = useI18n();
   const flagged = facilities
     .filter((f) => f.assessment.status !== "healthy")
     .sort((a, b) => RANK[a.assessment.status] - RANK[b.assessment.status] || b.assessment.signals.length - a.assessment.signals.length);
 
   return (
-    <motion.section
-      aria-labelledby="attention-heading"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="card flex h-full flex-col p-6"
-    >
+    <motion.section aria-labelledby="attention-heading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="card flex h-full flex-col p-6">
       <h2 id="attention-heading" className="font-display text-xl font-semibold tracking-tight">
-        Who needs a hand
+        {t("attention.title")}
       </h2>
-      <p className="mt-1 text-sm text-ink-muted">Tap a centre for the full story.</p>
+      <p className="mt-1 text-sm text-ink-muted">{t("attention.subtitle")}</p>
 
       {flagged.length === 0 ? (
-        <p className="m-auto text-sm text-ink-muted">Quiet day. Nobody is struggling.</p>
+        <p className="m-auto text-sm text-ink-muted">{t("attention.empty")}</p>
       ) : (
         <ol className="-mx-3 mt-4 flex flex-col overflow-y-auto">
           {flagged.map(({ facility, assessment }) => {
@@ -44,8 +40,8 @@ export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFaci
                       <StatusBadge severity={assessment.status} className="shrink-0" />
                     </span>
                     <span className="mt-1 block truncate text-sm text-ink-muted">
-                      {top?.message}
-                      {rest.length > 0 && <span className="text-ink-subtle">, +{rest.length} more</span>}
+                      {top && signal(top)}
+                      {rest.length > 0 && <span className="text-ink-subtle">, {t("attention.more", { n: rest.length })}</span>}
                     </span>
                   </span>
                   <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" />

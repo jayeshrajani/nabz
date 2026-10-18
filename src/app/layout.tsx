@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "@/components/layout/providers";
 import { BRAND } from "@/config/brand";
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 focus:shadow">
           Skip to content
         </a>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

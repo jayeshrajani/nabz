@@ -2,20 +2,22 @@
 
 District healthcare operations intelligence for Primary and Community Health Centres (PHCs/CHCs). It tracks medicine stock, patient footfall, beds, doctor attendance and diagnostic availability, then flags which facilities need attention and why.
 
-> **Status: V2 (operations).** All data is synthetic and fictional. See [plan.md](plan.md) for what is implemented and what is planned.
+> **Status: V3 complete, V4 in progress.** All data is synthetic and fictional. See [plan.md](plan.md) for what is implemented and what is planned.
 
 ## What works today
 
-- **District pulse:** a plain-language summary of who needs a hand, the district's 30-day patient "pulse", an interactive 3D map (with 2D fallback), and a ranking of the centres carrying the most weight
-- **Facility workspace** (`/facilities/[id]`): patients with a 7-day outlook, beds, doctors, medicines with days-left and reorder suggestions, tests, and a log of recent changes
-- **All five domains are editable:** stock received/used/counted, beds, attendance, today's patients, and test availability. Every change is validated, transactional, idempotent and audited
+- **Three tabs:** Overview (district pulse, 3D map, who needs a hand, most-burdened centres), Centres (filterable directory), Transfers (suggested moves and the approval workflow)
+- **Seven languages:** English, हिन्दी, বাংলা, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, switchable from the header; risk alerts are rendered from codes so they translate too
+- **Ask nabz:** a chat assistant that answers questions about the district in the selected language, using only your session's data; Gemini first, Cerebras fallback, and a computed answer if AI is unavailable
+- **Cross-centre transfers:** nabz pairs centres about to run out with centres that can safely spare stock, explains why, and runs a human-approved workflow (approve holds stock, dispatch removes it, receipt adds it)
+- **Facility workspace** (`/facilities/[id]`): patients with a 7-day outlook, beds, doctors, medicines with days-left and reorder suggestions, tests, and a log of recent changes; all five domains editable
 - **Deterministic forecasting and alerts** ([method](docs/architecture.md#forecasting-method-srcdomainforecastts)): no ML and no randomness, so the same history always gives the same forecast
 - Isolated demo sessions: each anonymous visitor gets their own seeded dataset in Firestore
-- Server-side auth, Zod validation, structured logs, health endpoint, Docker image, CI
+- Server-side auth, Zod validation, idempotency keys, audit trail, rate limiting, structured logs, health endpoint, Docker image, CI
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · React Three Fiber + Drei · Motion · Recharts · Zod · Firebase Auth + Firestore (Admin SDK) · Vitest · Cloud Run
+Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · React Three Fiber + Drei · Motion · Recharts · Zod · Firebase Auth + Firestore (Admin SDK) · Gemini (`@google/genai`) · Cerebras · Vitest · Cloud Run
 
 ## Run locally
 
@@ -39,6 +41,12 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `NEXT_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_APP_ID` | public, build-time | Firebase web config (not secrets) |
 | `FIREBASE_PROJECT_ID` | server | Admin SDK project (defaults to `GOOGLE_CLOUD_PROJECT`) |
 | `AUTH_MODE=local`, `DATA_BACKEND=memory`, `NEXT_PUBLIC_AUTH_MODE=local` | dev only | No-Firebase mode; ignored when `NODE_ENV=production` |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | server secret | Primary AI provider (both required to enable) |
+| `CEREBRAS_API_KEY`, `CEREBRAS_MODEL` | server secret | Fallback AI provider |
+| `AI_PRIMARY_PROVIDER` | server | `gemini` (default) or `cerebras` |
+| `AI_REQUEST_TIMEOUT_MS` | server | Per-provider timeout, 1000-60000 (default 12000) |
+
+Without AI keys the assistant still works, returning computed answers built directly from the data.
 
 ## Deploy to Cloud Run
 
@@ -58,10 +66,11 @@ docker build -t $REGION-docker.pkg.dev/$PROJECT/app/nabz \
 docker push $REGION-docker.pkg.dev/$PROJECT/app/nabz
 gcloud run deploy nabz --image $REGION-docker.pkg.dev/$PROJECT/app/nabz --region $REGION \
   --service-account nabz-run@$PROJECT.iam.gserviceaccount.com --allow-unauthenticated \
-  --set-env-vars FIREBASE_PROJECT_ID=$PROJECT
+  --set-env-vars FIREBASE_PROJECT_ID=$PROJECT,GEMINI_MODEL=$GEMINI_MODEL,CEREBRAS_MODEL=$CEREBRAS_MODEL \
+  --set-secrets GEMINI_API_KEY=gemini-api-key:latest,CEREBRAS_API_KEY=cerebras-api-key:latest
 ```
 
-No service-account key file is needed; Cloud Run's identity provides Application Default Credentials. Smoke test with `curl $URL/api/health` (Cloud Run reserves `/healthz` on `run.app` domains). AI keys (V3+) go in Secret Manager via `--set-secrets`.
+No service-account key file is needed; Cloud Run's identity provides Application Default Credentials. Smoke test with `curl $URL/api/health` (Cloud Run reserves `/healthz` on `run.app` domains). Create the two secrets first with `gcloud secrets create ... --data-file=-` and grant the service account `roles/secretmanager.secretAccessor`.
 
 ## Security
 
@@ -69,7 +78,12 @@ No service-account key file is needed; Cloud Run's identity provides Application
 - ID tokens are verified server-side, and roles come from the server, never the client.
 - Every read and write is scoped to the caller's session.
 - Inputs and stored documents are validated with Zod. Error responses are generic and logs redact credentials.
+- AI is read-only: it sees a bounded snapshot of the caller's own session, cannot mutate data, and its answers are rejected if they cite numbers or centres that are not in that snapshot. Questions are rate limited and fenced as data, not instructions.
+- Consequential actions (transfers) need explicit human approval at each step and are idempotent and audited.
 
 ## Known limitations
 
-See [plan.md](plan.md#v1--foundation--premium-ux--awaiting-approval). Emulator and E2E tests, forecasting, transfers, AI and the copilot are not implemented yet.
+- Firestore emulator tests and Playwright end-to-end tests are not yet written; the in-memory repository is tested instead.
+- The rate limiter is per instance (adequate for one small Cloud Run service).
+- Only anonymous demo identities are provisioned; other roles are defined but not issued.
+- Cloud Run deployment has not been verified yet.

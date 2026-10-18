@@ -1,17 +1,22 @@
 "use client";
 
-import { ContactShadows, Html, Line, OrbitControls, RoundedBox, useCursor } from "@react-three/drei";
+import { ContactShadows, Html, Line, OrbitControls, QuadraticBezierLine, RoundedBox, useCursor } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { SEVERITY_META } from "@/components/ui/status-badge";
 import type { AssessedFacility } from "@/domain/district";
+import type { Transfer } from "@/domain/redistribution";
+import type { Severity } from "@/domain/risk";
 
 export interface NetworkProps {
   facilities: AssessedFacility[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   animate: boolean;
+  /** Localised status labels; Canvas children render outside the app's React context. */
+  labels: Record<Severity, string>;
+  transfers?: Transfer[];
 }
 
 const BACKGROUND = "#f4f7f2";
@@ -27,7 +32,9 @@ function FacilityNode({
   dimmed,
   onSelect,
   animate,
+  labels,
 }: {
+  labels: Record<Severity, string>;
   item: AssessedFacility;
   selected: boolean;
   dimmed: boolean;
@@ -104,7 +111,7 @@ function FacilityNode({
         <Html position={[0, height + size + 0.9, 0]} center className="pointer-events-none select-none">
           <div className="rounded-xl border border-line bg-surface px-3 py-2 text-center whitespace-nowrap shadow-[0_8px_24px_-8px_rgb(19_33_28/0.25)]">
             <p className="text-sm font-medium text-ink">{facility.name}</p>
-            <p className={`text-xs ${SEVERITY_META[assessment.status].ink}`}>{SEVERITY_META[assessment.status].label}</p>
+            <p className={`text-xs ${SEVERITY_META[assessment.status].ink}`}>{labels[assessment.status]}</p>
           </div>
         </Html>
       )}
@@ -174,7 +181,37 @@ function CameraRig({ focus, animate }: { focus: { x: number; z: number } | null;
   return null;
 }
 
-export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: NetworkProps) {
+function TransferArcs({ facilities, transfers }: { facilities: AssessedFacility[]; transfers: Transfer[] }) {
+  const byId = new Map(facilities.map((f) => [f.facility.id, f.facility.position]));
+  return (
+    <>
+      {transfers
+        .filter((t) => t.status === "approved" || t.status === "dispatched")
+        .map((t) => {
+          const a = byId.get(t.fromFacilityId);
+          const b = byId.get(t.toFacilityId);
+          if (!a || !b) return null;
+          const inTransit = t.status === "dispatched";
+          // Planned moves are dashed; only dispatched ones are drawn solid. Neither implies arrival.
+          return (
+            <QuadraticBezierLine
+              key={t.id}
+              start={[a.x, 0.2, a.z]}
+              end={[b.x, 0.2, b.z]}
+              mid={[(a.x + b.x) / 2, 5, (a.z + b.z) / 2]}
+              color={inTransit ? "#0f7a5f" : "#f0ad32"}
+              lineWidth={3}
+              dashed={!inTransit}
+              dashSize={0.6}
+              gapSize={0.4}
+            />
+          );
+        })}
+    </>
+  );
+}
+
+export function DistrictNetwork({ facilities, selectedId, onSelect, animate, labels, transfers = [] }: NetworkProps) {
   const selected = facilities.find((f) => f.facility.id === selectedId) ?? null;
   const related = useMemo(() => {
     if (!selected) return null;
@@ -197,6 +234,7 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
       <directionalLight position={[8, 20, 6]} intensity={1.4} />
       <ContactShadows position={[0, 0, 0]} scale={70} opacity={0.28} blur={2.4} far={8} frames={1} color="#2c4a40" />
       <Links facilities={facilities} selectedId={selectedId} />
+      <TransferArcs facilities={facilities} transfers={transfers} />
       {facilities.map((item) => (
         <FacilityNode
           key={item.facility.id}
@@ -205,6 +243,7 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
           dimmed={related !== null && !related.has(item.facility.id)}
           onSelect={onSelect}
           animate={animate}
+          labels={labels}
         />
       ))}
       <CameraRig focus={selected ? selected.facility.position : null} animate={animate} />

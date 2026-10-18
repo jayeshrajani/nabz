@@ -4,6 +4,7 @@ import { Check, Loader2 } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import type { FacilityUpdate } from "@/domain/operations";
 import type { SubmitResult } from "@/features/facility/use-facility";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 
 export type Submit = (update: FacilityUpdate) => Promise<SubmitResult>;
@@ -44,7 +45,7 @@ export function UpdateForm({
   submit,
   build,
   children,
-  label = "Save",
+  label,
   className,
 }: {
   submit: Submit;
@@ -53,6 +54,7 @@ export function UpdateForm({
   label?: string;
   className?: string;
 }) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<{ kind: "idle" | "pending" | "done" | "error"; message?: string }>({ kind: "idle" });
 
   async function onSubmit(event: FormEvent) {
@@ -74,7 +76,7 @@ export function UpdateForm({
           className="inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-forest disabled:opacity-60"
         >
           {status.kind === "pending" ? <Loader2 aria-hidden className="size-4 animate-spin" /> : null}
-          {label}
+          {label ?? t("common.save")}
         </button>
       </div>
       <p aria-live="polite" className={cn("mt-2 min-h-5 text-xs", status.kind === "error" ? "text-alert-ink" : "text-ok-ink")}>

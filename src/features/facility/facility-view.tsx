@@ -4,15 +4,24 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { ActivitySection, MedicinesSection, PatientsSection, RightNowSection, TestsSection } from "@/components/facilities/facility-sections";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useDistrict } from "@/features/district/use-district";
+import { useI18n } from "@/i18n/provider";
 import { useFacility } from "./use-facility";
 
 export function FacilityView({ id }: { id: string }) {
-  const { state, reload, submit } = useFacility(id);
+  const { t, signal } = useI18n();
+  const district = useDistrict();
+  const { state, reload, submit: rawSubmit } = useFacility(id);
+  const submit: typeof rawSubmit = async (update) => {
+    const result = await rawSubmit(update);
+    if (result.ok) district.reload();
+    return result;
+  };
 
   return (
-    <div className="space-y-6 pt-2">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
-        <ArrowLeft aria-hidden className="size-4" /> District
+    <div className="space-y-6">
+      <Link href="/centres" className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
+        <ArrowLeft aria-hidden className="size-4" /> {t("nav.centres")}
       </Link>
 
       {state.status === "loading" && (
@@ -27,10 +36,10 @@ export function FacilityView({ id }: { id: string }) {
 
       {state.status === "error" && (
         <div role="alert" className="card mx-auto max-w-md p-8 text-center">
-          <h1 className="font-display text-xl font-semibold">Couldn&apos;t open this centre</h1>
+          <h1 className="font-display text-xl font-semibold">{t("common.errorTitle")}</h1>
           <p className="mt-2 text-sm text-ink-muted">{state.message}</p>
           <button type="button" onClick={reload} className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-white">
-            <RefreshCw aria-hidden className="size-4" /> Try again
+            <RefreshCw aria-hidden className="size-4" /> {t("common.retry")}
           </button>
         </div>
       )}
@@ -40,7 +49,7 @@ export function FacilityView({ id }: { id: string }) {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="eyebrow text-ink-subtle">
-                {state.detail.facility.type === "CHC" ? "Community Health Centre" : "Primary Health Centre"}, {state.detail.facility.block}
+                {t(`type.${state.detail.facility.type}`)}, {state.detail.facility.block}
               </p>
               <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{state.detail.facility.name}</h1>
             </div>
@@ -48,20 +57,20 @@ export function FacilityView({ id }: { id: string }) {
               <StatusBadge severity={state.detail.assessment.status} className="px-3 py-1 text-sm" />
               <span className="text-sm text-ink-muted">
                 {state.detail.assessment.signals.length === 0
-                  ? "Running like clockwork"
-                  : `${state.detail.assessment.signals.length} ${state.detail.assessment.signals.length === 1 ? "thing" : "things"} to look at`}
+                  ? t("facility.clockwork")
+                  : t("facility.things", { n: state.detail.assessment.signals.length })}
               </span>
             </div>
           </header>
 
           {state.detail.assessment.signals.length > 0 && (
-            <ul aria-label="What needs attention" className="flex flex-wrap gap-2">
+            <ul aria-label={t("attention.title")} className="flex flex-wrap gap-2">
               {state.detail.assessment.signals.map((s, i) => (
                 <li
                   key={`${s.domain}-${s.ref ?? i}`}
                   className={s.severity === "critical" ? "rounded-full bg-alert-soft px-3 py-1.5 text-sm text-alert-ink" : "rounded-full bg-watch-soft px-3 py-1.5 text-sm text-watch-ink"}
                 >
-                  {s.message}
+                  {signal(s)}
                 </li>
               ))}
             </ul>

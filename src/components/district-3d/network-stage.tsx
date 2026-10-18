@@ -3,13 +3,14 @@
 import dynamic from "next/dynamic";
 import { useState, useSyncExternalStore } from "react";
 import { SEVERITY_META } from "@/components/ui/status-badge";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 import { DistrictNetwork2D } from "./district-network-2d";
 import type { NetworkProps } from "./district-network";
 
 const DistrictNetwork3D = dynamic(() => import("./district-network").then((m) => m.DistrictNetwork), {
   ssr: false,
-  loading: () => <StageMessage>Loading map</StageMessage>,
+  loading: () => <StageMessage>…</StageMessage>,
 });
 
 let webglSupport: boolean | undefined;
@@ -30,22 +31,24 @@ function StageMessage({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function NetworkStage(props: NetworkProps) {
+export function NetworkStage(props: Omit<NetworkProps, "labels">) {
+  const { t } = useI18n();
+  const labels = { healthy: t("status.healthy"), warning: t("status.warning"), critical: t("status.critical") };
   const webgl = useSyncExternalStore(noopSubscribe, detectWebGL, () => null);
   const [preferred, setPreferred] = useState<"3d" | "2d">("3d");
   const mode = webgl === false ? "2d" : preferred;
 
   return (
-    <section aria-label="District map" className="card relative h-[360px] overflow-hidden sm:h-[460px] lg:h-[560px]">
+    <section aria-label={t("map.label")} className="card relative h-[360px] overflow-hidden sm:h-[460px] lg:h-[560px]">
       <div className="absolute inset-0">
         {webgl === null ? (
-          <StageMessage>Loading map</StageMessage>
+          <StageMessage>{t("map.loading")}</StageMessage>
         ) : mode === "3d" ? (
           <div className="size-full" aria-hidden>
-            <DistrictNetwork3D {...props} />
+            <DistrictNetwork3D {...props} labels={labels} />
           </div>
         ) : (
-          <DistrictNetwork2D facilities={props.facilities} selectedId={props.selectedId} onSelect={props.onSelect} />
+          <DistrictNetwork2D facilities={props.facilities} selectedId={props.selectedId} onSelect={props.onSelect} labels={labels} />
         )}
       </div>
 
@@ -69,12 +72,15 @@ export function NetworkStage(props: NetworkProps) {
         {(["healthy", "warning", "critical"] as const).map((s) => (
           <li key={s} className="flex items-center gap-1.5">
             <span aria-hidden className="size-2.5 rounded-full" style={{ background: SEVERITY_META[s].hex }} />
-            {SEVERITY_META[s].label}
+            {labels[s]}
           </li>
         ))}
-        <li className="hidden text-ink-subtle sm:block">Cubes are CHCs, spheres are PHCs</li>
+        <li className="hidden text-ink-subtle sm:block">{t("map.legendShape")}</li>
+        {props.transfers?.some((x) => x.status === "approved" || x.status === "dispatched") && (
+          <li className="flex items-center gap-1.5"><span aria-hidden className="h-0.5 w-4 border-t-2 border-dashed border-watch" />{t("map.planned")}<span aria-hidden className="ml-2 h-0.5 w-4 bg-brand" />{t("map.inTransit")}</li>
+        )}
       </ul>
-      {webgl === false && <p className="absolute top-4 right-4 text-xs text-ink-subtle">Showing flat map</p>}
+      {webgl === false && <p className="absolute top-4 right-4 text-xs text-ink-subtle">{t("map.flat")}</p>}
     </section>
   );
 }

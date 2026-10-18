@@ -42,7 +42,7 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 - Only anonymous demo identities are provisioned; admin/operator/viewer roles are defined but not issued
 - Alerts are computed on read, not persisted
 
-## V2 — Complete healthcare operations ✅ (awaiting approval)
+## V2 — Complete healthcare operations ✅
 
 - [x] Visual identity: forest + mint palette, Bricolage Grotesque display type, "pulse" hero drawn from real 30-day district footfall, plain-language copy
 - [x] Single mutation endpoint `POST /api/facilities/[id]/updates` (discriminated union: beds, attendance, footfall, stock receive/issue/count, diagnostic) — Zod-validated, 8 KB body cap, `facility:write` capability, transactional
@@ -61,23 +61,28 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 
 **Endpoints added:** `GET /api/facilities/[id]`, `POST /api/facilities/[id]/updates`
 
-## V3 — Cross-facility intelligence + explainability
+## V3 — Cross-facility intelligence + explainability ✅
 
-- [ ] Donor matching: surplus = stock − (avg × (lead + reserve days)); proximity score from network distance
-- [ ] Transfer workflow `proposed → approved (reserves stock) → dispatched → received`, cancel where valid; idempotency keys; Firestore transactions; audit events
-- [ ] Explainable recommendation cards with evidence references
-- [ ] AI gateway (`generateStructuredResponse`) — Gemini primary, Cerebras fallback, timeout, Zod-validated output, deterministic fallback text
-- [ ] 3D: active transfer relationships (pending ≠ delivered)
-- [ ] Resettable demo scenario fixtures applied via normal mutation paths
-- [ ] Concurrency + duplicate-transfer tests
-- **Done when:** hero transfer flow works end to end with reserves enforced and audit trail
+- [x] Donor matching (`src/domain/redistribution.ts`): donor reserve = forecast demand × (lead time + 14 days) + safety stock; receiver topped up to lead time + 7 days; nearest donor that covers the full shortfall wins; deterministic
+- [x] Transfer workflow `proposed → approved (reserves stock) → dispatched (leaves donor) → received (arrives)`, cancel from proposed/approved releases reservation; transactional; idempotency keys; audit events on both centres
+- [x] Explainable recommendation cards: receiver days-left before/after, donor days-left before/after, lead time, alternatives, partial-cover note
+- [x] AI gateway (`src/lib/ai`): provider-agnostic `generateStructuredResponse`, Gemini (`@google/genai`, JSON schema) primary, Cerebras (OpenAI-compatible REST) fallback, per-call timeout, Zod validation, at most one attempt per provider, structured logs without content or keys
+- [x] 3D map: approved transfers drawn dashed (planned), dispatched drawn solid (in transit); receipt is never implied
+- [x] Tests: redistribution, lifecycle, repository idempotency/isolation/over-approval, gateway fallback matrix
+- [ ] Resettable demo scenario fixtures (deferred)
+- [ ] Firestore emulator concurrency tests (deferred)
 
-## V4 — Multilingual copilot + hardening
+**Endpoints added:** `POST /api/transfers`, `POST /api/transfers/[id]` (`approve` / `dispatch` / `receive` / `cancel`)
 
-- [ ] Read-only copilot (EN/HI) over bounded, session-scoped grounding context; facts vs forecasts labelled
-- [ ] Rate limiting for AI endpoints, input size limits
-- [ ] Playwright critical paths; accessibility audit; mobile polish; performance pass
-- [ ] Cloud Run deployment + smoke verification; final README and evaluation evidence
+## V4 — Multilingual copilot + hardening (in progress)
+
+- [x] Three tabs: Overview, Centres, Transfers; centre workspace at `/facilities/[id]`
+- [x] Seven languages: English, Hindi, Bengali, Tamil, Telugu, Marathi, Kannada (`src/i18n`); every key and placeholder verified by tests; risk signals carry codes + params so they render in any language
+- [x] "Ask nabz" copilot (`POST /api/assistant`): read-only, grounded in a bounded snapshot of the caller's own session, answers in the selected language, labels facts as recorded vs forecast
+- [x] Anti-fabrication: AI answers rejected if they cite unknown centres or numbers absent from the grounding context; falls back to a deterministic localised answer when AI is off, slow or invalid
+- [x] Abuse protection: 12 questions/minute per user, 2 KB request cap, prompt-injection fencing of the question
+- [ ] Playwright critical paths (skipped for time)
+- [ ] Cloud Run deployment + smoke verification
 
 ## Risks
 

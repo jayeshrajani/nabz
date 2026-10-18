@@ -8,7 +8,7 @@ const EXTENT = 26;
 const toPct = (v: number) => `${((v + EXTENT) / (EXTENT * 2)) * 100}%`;
 
 /** Accessible, WebGL-free view of the same network. */
-export function DistrictNetwork2D({ facilities, selectedId, onSelect }: Omit<NetworkProps, "animate">) {
+export function DistrictNetwork2D({ facilities, selectedId, onSelect, labels }: Omit<NetworkProps, "animate">) {
   const byId = new Map(facilities.map((f) => [f.facility.id, f.facility]));
 
   return (
@@ -43,7 +43,7 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect }: Omit<Net
               <button
                 type="button"
                 aria-pressed={selected}
-                aria-label={`${facility.name}, ${meta.label}`}
+                aria-label={`${facility.name}, ${labels[assessment.status]}`}
                 onClick={() => onSelect(selected ? null : facility.id)}
                 className="group flex flex-col items-center gap-1.5"
               >

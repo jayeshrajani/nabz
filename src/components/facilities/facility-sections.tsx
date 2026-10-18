@@ -5,12 +5,11 @@ import { FootfallChart } from "@/components/charts/footfall-chart";
 import { SEVERITY_META } from "@/components/ui/status-badge";
 import type { FacilityDetail } from "@/domain/district";
 import type { StockForecast } from "@/domain/forecast";
-import { formatDays } from "@/domain/risk";
 import type { MedicineStock } from "@/domain/schemas";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 import { isCount, NumberField, UpdateForm, type Submit } from "./update-form";
 
-const nf = new Intl.NumberFormat("en-IN");
 
 function Card({ title, aside, children, className }: { title: string; aside?: React.ReactNode; children: React.ReactNode; className?: string }) {
   const id = `card-${title.toLowerCase().replace(/\W+/g, "-")}`;
@@ -28,6 +27,7 @@ function Card({ title, aside, children, className }: { title: string; aside?: Re
 }
 
 export function PatientsSection({ detail, submit }: { detail: FacilityDetail; submit: Submit }) {
+  const { t } = useI18n();
   const { footfall } = detail;
   const [today, setToday] = useState(footfall.today ?? 0);
   const next = footfall.forecast?.points;
@@ -37,19 +37,18 @@ export function PatientsSection({ detail, submit }: { detail: FacilityDetail; su
 
   return (
     <Card
-      title="Patients"
+      title={t("patients.title")}
       className="lg:col-span-8"
-      aside={footfall.surge ? <span className="rounded-full bg-watch-soft px-2.5 py-0.5 text-xs font-medium text-watch-ink">Busier than usual</span> : null}
+      aside={footfall.surge ? <span className="rounded-full bg-watch-soft px-2.5 py-0.5 text-xs font-medium text-watch-ink">{t("patients.busier")}</span> : null}
     >
       <div className="flex flex-wrap items-end gap-x-10 gap-y-3">
         <div>
           <p className="tabular font-display text-4xl font-semibold">{footfall.today ?? "n/a"}</p>
-          <p className="text-sm text-ink-muted">today{footfall.usual !== null && `, usually about ${Math.round(footfall.usual)}`}</p>
+          <p className="text-sm text-ink-muted">{footfall.usual !== null ? t("patients.todayUsual", { n: Math.round(footfall.usual) }) : t("hero.today")}</p>
         </div>
         {avgNext !== null && (
           <p className="max-w-xs text-sm text-ink-muted">
-            Next week, expect around <strong className="font-semibold text-ink">{avgNext} a day</strong>
-            {low !== null && high !== null && ` (anywhere from ${low} to ${high} on a given day).`}
+            {t("patients.nextWeek", { avg: avgNext, low: low ?? avgNext, high: high ?? avgNext })}
           </p>
         )}
       </div>
@@ -59,10 +58,10 @@ export function PatientsSection({ detail, submit }: { detail: FacilityDetail; su
       <UpdateForm
         submit={submit}
         className="mt-4 border-t border-line pt-4"
-        label="Update count"
-        build={() => (isCount(today) ? { kind: "footfall", today } : "Enter a whole number of patients.")}
+        label={t("patients.save")}
+        build={() => (isCount(today) ? { kind: "footfall", today } : t("common.wholeNumbers"))}
       >
-        <NumberField label="Patients seen today" value={today} onChange={setToday} className="w-44" />
+        <NumberField label={t("patients.field")} value={today} onChange={setToday} className="w-44" />
       </UpdateForm>
     </Card>
   );
@@ -77,6 +76,7 @@ function Meter({ value, max, tone }: { value: number; max: number; tone: string 
 }
 
 export function RightNowSection({ detail, submit }: { detail: FacilityDetail; submit: Submit }) {
+  const { t } = useI18n();
   const { beds, doctors } = detail.facility;
   const [occupied, setOccupied] = useState(beds.occupied);
   const [total, setTotal] = useState(beds.total);
@@ -86,11 +86,11 @@ export function RightNowSection({ detail, submit }: { detail: FacilityDetail; su
   const staffSignal = detail.assessment.signals.find((s) => s.domain === "staffing");
 
   return (
-    <Card title="Right now" className="lg:col-span-4">
+    <Card title={t("rightNow.title")} className="lg:col-span-4">
       <div className="space-y-6">
         <div>
           <div className="flex items-baseline justify-between">
-            <p className="text-sm text-ink-muted">Beds free</p>
+            <p className="text-sm text-ink-muted">{t("rightNow.bedsFree")}</p>
             <p className="tabular font-display text-2xl font-semibold">
               {beds.total - beds.occupied}
               <span className="text-base text-ink-subtle"> / {beds.total}</span>
@@ -100,19 +100,19 @@ export function RightNowSection({ detail, submit }: { detail: FacilityDetail; su
           <UpdateForm
             submit={submit}
             className="mt-3"
-            label="Save"
+            label={t("common.save")}
             build={() =>
-              !isCount(occupied) || !isCount(total) ? "Use whole numbers." : occupied > total ? "Occupied can't be more than total." : { kind: "beds", occupied, total }
+              !isCount(occupied) || !isCount(total) ? t("common.wholeNumbers") : occupied > total ? t("common.wholeNumbers") : { kind: "beds", occupied, total }
             }
           >
-            <NumberField label="Occupied" value={occupied} onChange={setOccupied} max={total} className="w-24" />
-            <NumberField label="Total" value={total} onChange={setTotal} className="w-24" />
+            <NumberField label={t("rightNow.occupied")} value={occupied} onChange={setOccupied} max={total} className="w-24" />
+            <NumberField label={t("rightNow.total")} value={total} onChange={setTotal} className="w-24" />
           </UpdateForm>
         </div>
 
         <div className="border-t border-line pt-5">
           <div className="flex items-baseline justify-between">
-            <p className="text-sm text-ink-muted">Doctors in today</p>
+            <p className="text-sm text-ink-muted">{t("rightNow.doctors")}</p>
             <p className="tabular font-display text-2xl font-semibold">
               {doctors.present}
               <span className="text-base text-ink-subtle"> / {doctors.scheduled}</span>
@@ -122,17 +122,17 @@ export function RightNowSection({ detail, submit }: { detail: FacilityDetail; su
           <UpdateForm
             submit={submit}
             className="mt-3"
-            label="Save"
+            label={t("common.save")}
             build={() =>
               !isCount(present) || !isCount(scheduled)
-                ? "Use whole numbers."
+                ? t("common.wholeNumbers")
                 : present > scheduled
-                  ? "Present can't be more than scheduled."
+                  ? t("common.wholeNumbers")
                   : { kind: "attendance", present, scheduled }
             }
           >
-            <NumberField label="Present" value={present} onChange={setPresent} max={scheduled} className="w-24" />
-            <NumberField label="Rostered" value={scheduled} onChange={setScheduled} className="w-24" />
+            <NumberField label={t("rightNow.present")} value={present} onChange={setPresent} max={scheduled} className="w-24" />
+            <NumberField label={t("rightNow.rostered")} value={scheduled} onChange={setScheduled} className="w-24" />
           </UpdateForm>
         </div>
       </div>
@@ -141,30 +141,31 @@ export function RightNowSection({ detail, submit }: { detail: FacilityDetail; su
 }
 
 const MOVES = [
-  { id: "receive", label: "Received" },
-  { id: "issue", label: "Used" },
-  { id: "count", label: "Counted" },
+  { id: "receive", label: "medicines.received" },
+  { id: "issue", label: "medicines.used" },
+  { id: "count", label: "medicines.counted" },
 ] as const;
 
 function StockForm({ medicine, submit }: { medicine: MedicineStock; submit: Submit }) {
+  const { t, number } = useI18n();
   const [movement, setMovement] = useState<(typeof MOVES)[number]["id"]>("receive");
   const [quantity, setQuantity] = useState(0);
   return (
     <UpdateForm
       submit={submit}
       className="px-1 pt-3 pb-1"
-      label="Record"
+      label={t("medicines.record")}
       build={() =>
         !isCount(quantity)
-          ? "Use a whole number."
+          ? t("common.wholeNumbers")
           : movement !== "count" && quantity === 0
-            ? "Quantity must be more than zero."
+            ? t("common.wholeNumbers")
             : movement === "issue" && quantity > medicine.quantity
-              ? `Only ${nf.format(medicine.quantity)} ${medicine.unit} in stock.`
+              ? `${number(medicine.quantity)} ${medicine.unit}`
               : { kind: "stock", medicineId: medicine.id, movement, quantity }
       }
     >
-      <div role="radiogroup" aria-label="Type of change" className="flex h-10 rounded-full border border-line bg-surface p-1 text-sm">
+      <div role="radiogroup" aria-label={t("medicines.title")} className="flex h-10 rounded-full border border-line bg-surface p-1 text-sm">
         {MOVES.map((m) => (
           <button
             key={m.id}
@@ -174,23 +175,24 @@ function StockForm({ medicine, submit }: { medicine: MedicineStock; submit: Subm
             onClick={() => setMovement(m.id)}
             className={cn("rounded-full px-3", movement === m.id ? "bg-forest text-white" : "text-ink-muted hover:text-ink")}
           >
-            {m.label}
+            {t(m.label)}
           </button>
         ))}
       </div>
-      <NumberField label={movement === "count" ? `${medicine.unit} on shelf` : medicine.unit} value={quantity} onChange={setQuantity} className="w-32" />
+      <NumberField label={movement === "count" ? `${medicine.unit}, ${t("medicines.onShelf")}` : medicine.unit} value={quantity} onChange={setQuantity} className="w-32" />
     </UpdateForm>
   );
 }
 
-function lasts(f: StockForecast | undefined): string {
-  if (!f || f.daysUntilStockOut === null) return "Not enough history";
-  if (f.daysUntilStockOut === 0) return "Out of stock";
-  if (!Number.isFinite(f.daysUntilStockOut)) return "Not being used";
-  return `About ${formatDays(f.daysUntilStockOut)}`;
+function lasts(f: StockForecast | undefined, t: ReturnType<typeof useI18n>["t"]): string {
+  if (!f || f.daysUntilStockOut === null) return t("medicines.noHistory");
+  if (f.daysUntilStockOut === 0) return t("medicines.out");
+  if (!Number.isFinite(f.daysUntilStockOut)) return t("medicines.unused");
+  return t("medicines.lasts", { days: Math.max(1, Math.round(f.daysUntilStockOut)) });
 }
 
 export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; submit: Submit }) {
+  const { t, number } = useI18n();
   const [open, setOpen] = useState<string | null>(null);
   const forecasts = new Map(detail.stock.map((s) => [s.medicineId, s]));
   const severity = new Map(detail.assessment.signals.filter((s) => s.domain === "medicine").map((s) => [s.ref, s.severity]));
@@ -198,9 +200,9 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
 
   return (
     <Card
-      title="Medicines"
+      title={t("medicines.title")}
       className="lg:col-span-8"
-      aside={toOrder > 0 ? <span className="text-sm text-ink-muted">{toOrder} worth reordering</span> : <span className="text-sm text-ink-muted">Shelves look fine</span>}
+      aside={toOrder > 0 ? <span className="text-sm text-ink-muted">{t("medicines.reorder", { n: toOrder })}</span> : <span className="text-sm text-ink-muted">{t("medicines.fine")}</span>}
     >
       <ul className="divide-y divide-line">
         {detail.facility.medicines.map((m) => {
@@ -213,25 +215,24 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
                 <div className="min-w-0">
                   <p className="truncate font-medium">{m.name}</p>
                   {f?.shouldReorder && f.suggestedOrder > 0 && (
-                    <p className="text-xs text-brand">
-                      Order about {nf.format(f.suggestedOrder)} {m.unit} to stay covered for two weeks
-                    </p>
+                    <p className="text-xs text-brand">{t("medicines.order", { qty: number(f.suggestedOrder), unit: m.unit })}</p>
                   )}
+                  {m.reserved > 0 && <p className="text-xs text-watch-ink">{t("medicines.held", { n: number(m.reserved) })}</p>}
                 </div>
                 <p className="tabular hidden text-sm text-ink-muted sm:block">
-                  {nf.format(m.quantity)} {m.unit}
+                  {number(m.quantity)} {m.unit}
                 </p>
-                <p className={cn("tabular hidden text-sm sm:block", sev ? `font-medium ${SEVERITY_META[sev].ink}` : "text-ink-muted")}>{lasts(f)}</p>
+                <p className={cn("tabular hidden text-sm sm:block", sev ? `font-medium ${SEVERITY_META[sev].ink}` : "text-ink-muted")}>{lasts(f, t)}</p>
                 <button
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => setOpen(isOpen ? null : m.id)}
                   className="rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-muted hover:border-line-strong hover:text-ink"
                 >
-                  {isOpen ? "Close" : "Update"}
+                  {isOpen ? t("common.close") : t("common.update")}
                 </button>
                 <p className="col-span-2 text-xs text-ink-muted sm:hidden">
-                  {nf.format(m.quantity)} {m.unit}, <span className={sev ? SEVERITY_META[sev].ink : undefined}>{lasts(f).toLowerCase()}</span>
+                  {number(m.quantity)} {m.unit}, <span className={sev ? SEVERITY_META[sev].ink : undefined}>{lasts(f, t).toLowerCase()}</span>
                 </p>
               </div>
               {isOpen && <StockForm medicine={m} submit={submit} />}
@@ -244,6 +245,7 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
 }
 
 function TestRow({ test, submit }: { test: FacilityDetail["facility"]["diagnostics"][number]; submit: Submit }) {
+  const { t, number } = useI18n();
   const [open, setOpen] = useState(false);
   const [kits, setKits] = useState(test.kitsRemaining);
   const [available, setAvailable] = useState(test.available);
@@ -254,7 +256,7 @@ function TestRow({ test, submit }: { test: FacilityDetail["facility"]["diagnosti
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{test.name}</p>
-          <p className={cn("text-xs", working ? "text-ink-muted" : "font-medium text-alert-ink")}>{working ? `${nf.format(test.kitsRemaining)} kits` : "Not available"}</p>
+          <p className={cn("text-xs", working ? "text-ink-muted" : "font-medium text-alert-ink")}>{working ? t("tests.kits", { n: number(test.kitsRemaining) }) : t("tests.unavailable")}</p>
         </div>
         <button
           type="button"
@@ -262,19 +264,19 @@ function TestRow({ test, submit }: { test: FacilityDetail["facility"]["diagnosti
           onClick={() => setOpen(!open)}
           className="rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-muted hover:border-line-strong hover:text-ink"
         >
-          {open ? "Close" : "Update"}
+          {open ? t("common.close") : t("common.update")}
         </button>
       </div>
       {open && (
         <UpdateForm
           submit={submit}
           className="pt-3"
-          build={() => (isCount(kits) ? { kind: "diagnostic", testId: test.id, available, kitsRemaining: kits } : "Use a whole number of kits.")}
+          build={() => (isCount(kits) ? { kind: "diagnostic", testId: test.id, available, kitsRemaining: kits } : t("common.wholeNumbers"))}
         >
-          <NumberField label="Kits left" value={kits} onChange={setKits} className="w-24" />
+          <NumberField label={t("tests.kitsLeft")} value={kits} onChange={setKits} className="w-24" />
           <label className="flex h-10 items-center gap-2 text-sm text-ink-muted">
             <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} className="size-4 accent-brand" />
-            Running
+            {t("tests.running")}
           </label>
         </UpdateForm>
       )}
@@ -283,9 +285,10 @@ function TestRow({ test, submit }: { test: FacilityDetail["facility"]["diagnosti
 }
 
 export function TestsSection({ detail, submit }: { detail: FacilityDetail; submit: Submit }) {
+  const { t } = useI18n();
   const down = detail.facility.diagnostics.filter((t) => !t.available || t.kitsRemaining === 0).length;
   return (
-    <Card title="Tests" className="lg:col-span-4" aside={<span className="text-sm text-ink-muted">{down ? `${down} down` : "All running"}</span>}>
+    <Card title={t("tests.title")} className="lg:col-span-4" aside={<span className="text-sm text-ink-muted">{down ? t("tests.down", { n: down }) : t("tests.allRunning")}</span>}>
       <ul className="divide-y divide-line">
         {detail.facility.diagnostics.map((t) => (
           <TestRow key={t.id} test={t} submit={submit} />
@@ -305,10 +308,11 @@ function ago(iso: string): string {
 }
 
 export function ActivitySection({ detail }: { detail: FacilityDetail }) {
+  const { t } = useI18n();
   return (
-    <Card title="Recent changes" className="lg:col-span-12">
+    <Card title={t("activity.title")} className="lg:col-span-12">
       {detail.activity.length === 0 ? (
-        <p className="text-sm text-ink-muted">Nothing logged yet. Every update you make here is recorded with who made it and when.</p>
+        <p className="text-sm text-ink-muted">{t("activity.empty")}</p>
       ) : (
         <ol className="space-y-3">
           {detail.activity.map((e) => (
