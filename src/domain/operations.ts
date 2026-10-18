@@ -36,7 +36,7 @@ export interface InventoryMovement {
 export interface AuditEvent {
   id: string;
   facilityId: string;
-  kind: FacilityUpdate["kind"];
+  kind: FacilityUpdate["kind"] | "transfer";
   summary: string;
   actorUid: string;
   at: string;
@@ -97,10 +97,12 @@ export function applyFacilityUpdate(facility: Facility, update: FacilityUpdate, 
         medicine.quantity = before + update.quantity;
       } else if (update.movement === "issue") {
         if (update.quantity === 0) throw new DomainRuleError("Issued quantity must be more than zero.");
-        if (update.quantity > before) throw new DomainRuleError(`Only ${before} ${medicine.unit} in stock.`);
+        const free = before - medicine.reserved;
+        if (update.quantity > free) throw new DomainRuleError(`Only ${free} ${medicine.unit} available${medicine.reserved ? ` (${medicine.reserved} held for transfers)` : ""}.`);
         medicine.quantity = before - update.quantity;
         medicine.dailyConsumption = bumpToday(medicine.dailyConsumption, update.quantity);
       } else {
+        if (update.quantity < medicine.reserved) throw new DomainRuleError(`${medicine.reserved} ${medicine.unit} are held for transfers; count cannot be lower.`);
         medicine.quantity = update.quantity;
       }
       const delta = medicine.quantity - before;

@@ -8,6 +8,7 @@ const med = (overrides: Partial<MedicineStock> = {}): MedicineStock => ({
   unit: "sachets",
   essential: true,
   quantity: 100,
+  reserved: 0,
   reorderLevel: 20,
   leadTimeDays: 5,
   dailyConsumption: Array(14).fill(10),

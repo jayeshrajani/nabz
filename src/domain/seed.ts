@@ -109,6 +109,7 @@ function buildMedicines(spec: FacilitySpec, rng: () => number): MedicineStock[] 
       unit: m.unit,
       essential: true,
       quantity: Math.round(base * coverDays),
+      reserved: 0,
       reorderLevel: Math.round(base * m.lead * 1.5),
       leadTimeDays: m.lead,
       dailyConsumption,

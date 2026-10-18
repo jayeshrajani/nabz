@@ -14,11 +14,13 @@ export const MedicineStockSchema = z.object({
   unit: z.string().min(1).max(32),
   essential: z.boolean(),
   quantity: count,
+  /** Units held for approved outgoing transfers; always <= quantity. */
+  reserved: count.default(0),
   reorderLevel: count,
   leadTimeDays: z.number().int().min(1).max(60),
   /** Units consumed per day, oldest first. */
   dailyConsumption: z.array(count).max(MAX_HISTORY_DAYS),
-});
+}).refine((m) => m.reserved <= m.quantity, { message: "reserved stock cannot exceed quantity" });
 
 export const DiagnosticTestSchema = z.object({
   id,

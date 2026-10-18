@@ -103,6 +103,7 @@ function daysUntilZero(quantity: number, level: number, trend: number): number {
 
 export function forecastStock(m: MedicineStock): StockForecast {
   const f = forecastSeries(m.dailyConsumption);
+  const available = m.quantity - m.reserved;
   if (!f) {
     return {
       medicineId: m.id,
@@ -111,7 +112,7 @@ export function forecastStock(m: MedicineStock): StockForecast {
       daysUntilStockOutPessimistic: null,
       safetyStock: 0,
       reorderPoint: m.reorderLevel,
-      shouldReorder: m.quantity <= m.reorderLevel,
+      shouldReorder: available <= m.reorderLevel,
       suggestedOrder: 0,
     };
   }
@@ -121,12 +122,12 @@ export function forecastStock(m: MedicineStock): StockForecast {
   return {
     medicineId: m.id,
     averageDaily: f.level,
-    daysUntilStockOut: f.level <= 0 && f.trendPerDay <= 0 ? Number.POSITIVE_INFINITY : round1(daysUntilZero(m.quantity, f.level, f.trendPerDay)),
-    daysUntilStockOutPessimistic: round1(daysUntilZero(m.quantity, f.level + FORECAST.rangeZ * f.spread, f.trendPerDay)),
+    daysUntilStockOut: f.level <= 0 && f.trendPerDay <= 0 ? Number.POSITIVE_INFINITY : round1(daysUntilZero(available, f.level, f.trendPerDay)),
+    daysUntilStockOutPessimistic: round1(daysUntilZero(available, f.level + FORECAST.rangeZ * f.spread, f.trendPerDay)),
     safetyStock,
     reorderPoint,
-    shouldReorder: m.quantity <= reorderPoint,
-    suggestedOrder: Math.max(0, Math.ceil(target - m.quantity)),
+    shouldReorder: available <= reorderPoint,
+    suggestedOrder: Math.max(0, Math.ceil(target - available)),
   };
 }
 

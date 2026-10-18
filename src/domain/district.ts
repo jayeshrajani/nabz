@@ -1,5 +1,6 @@
 import { footfallOutlook, forecastStock, type FootfallOutlook, type StockForecast } from "./forecast";
 import type { AuditEvent } from "./operations";
+import { suggestTransfers, type Transfer, type TransferSuggestion } from "./redistribution";
 import { assessFacility, type FacilityAssessment, type RiskDomain } from "./risk";
 import type { District, Facility } from "./schemas";
 
@@ -35,6 +36,8 @@ export interface DistrictView {
   struggling: StrugglingFacility[];
   /** District-wide daily arrivals, oldest first (sum across centres, aligned to the latest day). */
   footfallSeries: number[];
+  transfers: Transfer[];
+  suggestions: TransferSuggestion[];
 }
 
 export function rankStruggling(assessed: readonly AssessedFacility[], limit = 3): StrugglingFacility[] {
@@ -60,7 +63,7 @@ function districtFootfall(facilities: readonly Facility[]): number[] {
   return out;
 }
 
-export function buildDistrictView(district: District, facilities: readonly Facility[]): DistrictView {
+export function buildDistrictView(district: District, facilities: readonly Facility[], transfers: readonly Transfer[] = []): DistrictView {
   const assessed = facilities.map((facility) => ({ facility, assessment: assessFacility(facility) }));
   const summary: DistrictSummary = {
     facilities: assessed.length,
@@ -87,7 +90,15 @@ export function buildDistrictView(district: District, facilities: readonly Facil
     if (!summary.lastUpdated || facility.updatedAt > summary.lastUpdated) summary.lastUpdated = facility.updatedAt;
   }
 
-  return { district, summary, facilities: assessed, struggling: rankStruggling(assessed), footfallSeries: districtFootfall(facilities) };
+  return {
+    district,
+    summary,
+    facilities: assessed,
+    struggling: rankStruggling(assessed),
+    footfallSeries: districtFootfall(facilities),
+    transfers: [...transfers],
+    suggestions: suggestTransfers(facilities, transfers),
+  };
 }
 
 export interface FacilityDetail {

@@ -27,6 +27,13 @@ export async function readJson<S extends z.ZodType>(request: Request, schema: S,
 }
 
 const ID = /^[a-z0-9-]{1,64}$/;
+const IDEMPOTENCY_KEY = /^[A-Za-z0-9-]{8,64}$/;
+
+export function idempotencyKey(request: Request): string | undefined {
+  const key = request.headers.get("idempotency-key") ?? undefined;
+  if (key !== undefined && !IDEMPOTENCY_KEY.test(key)) throw new AppError("VALIDATION_FAILED", "Malformed Idempotency-Key header.");
+  return key;
+}
 
 export function parseId(value: string): string {
   if (!ID.test(value)) throw new AppError("NOT_FOUND", "Centre not found.");
