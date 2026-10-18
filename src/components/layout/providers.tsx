@@ -6,6 +6,7 @@ import { AssistantDrawer } from "@/features/assistant/assistant-drawer";
 import { DistrictProvider } from "@/features/district/use-district";
 import { I18nProvider } from "@/i18n/provider";
 import { AppShell } from "./app-shell";
+import { SplashScreen } from "./splash-screen";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <AssistantProvider>
           <AppShell>{children}</AppShell>
           <AssistantDrawer />
+          <SplashScreen />
         </AssistantProvider>
       </DistrictProvider>
     </I18nProvider>

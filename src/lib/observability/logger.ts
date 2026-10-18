@@ -3,10 +3,15 @@ type Fields = Record<string, unknown>;
 
 const SENSITIVE_KEY = /token|secret|password|authorization|api[-_]?key|credential|cookie/i;
 
-function redact(fields: Fields): Fields {
+const SENSITIVE_VALUE = /(Bearer\s+)[\w.-]+|AIza[\w-]{20,}|csk-[\w-]{10,}/g;
+
+export function redact(fields: Fields, depth = 0): Fields {
   const out: Fields = {};
   for (const [key, value] of Object.entries(fields)) {
-    out[key] = SENSITIVE_KEY.test(key) ? "[redacted]" : value;
+    if (SENSITIVE_KEY.test(key)) out[key] = "[redacted]";
+    else if (typeof value === "string") out[key] = value.replace(SENSITIVE_VALUE, "[redacted]");
+    else if (value && typeof value === "object" && !Array.isArray(value) && depth < 4) out[key] = redact(value as Fields, depth + 1);
+    else out[key] = value;
   }
   return out;
 }

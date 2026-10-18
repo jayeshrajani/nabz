@@ -44,5 +44,6 @@ export function createAuthenticator(deps: AuthDeps) {
 }
 
 export function isLocalAuthEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.AUTH_MODE === "local" && env.NODE_ENV !== "production";
+  // Fail closed: only explicit development/test environments may use local credentials.
+  return env.AUTH_MODE === "local" && (env.NODE_ENV === "development" || env.NODE_ENV === "test");
 }

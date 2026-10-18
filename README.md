@@ -16,6 +16,17 @@ District healthcare operations intelligence for Primary and Community Health Cen
 - Isolated demo sessions: each anonymous visitor gets their own seeded dataset in Firestore
 - Server-side auth, Zod validation, idempotency keys, audit trail, rate limiting, structured logs, health endpoint, Docker image, CI
 
+## Problem statement → feature map
+
+| Requirement | Where it lives |
+| --- | --- |
+| Stock monitoring + early stock-out warnings | [src/domain/risk.ts](src/domain/risk.ts), Stock-out watch on Overview |
+| Patient footfall, beds, doctor attendance, test availability audits | Facility workspace `/facilities/[id]`, every update audited ([src/domain/operations.ts](src/domain/operations.ts)) |
+| AI-driven demand forecasts | [src/domain/forecast.ts](src/domain/forecast.ts) (deterministic) + Ask nabz (Gemini, grounded) |
+| Smart redistribution across PHCs/CHCs | [src/domain/redistribution.ts](src/domain/redistribution.ts), Transfers tab with human approval |
+| Auto-flag underperforming / under-resourced centres | [src/domain/interventions.ts](src/domain/interventions.ts): each flagged centre is classed as underperforming or under-resourced (including patients per doctor), given a priority and a recommended action; shown on Overview as "Flagged for district intervention" |
+| Multilingual | 7 languages in [src/i18n](src/i18n), completeness enforced by tests |
+
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · React Three Fiber + Drei · Motion · Recharts · Zod · Firebase Auth + Firestore (Admin SDK) · Gemini (`@google/genai`) · Cerebras · Vitest · Cloud Run
@@ -78,7 +89,9 @@ No service-account key file is needed; Cloud Run's identity provides Application
 - All operational data goes through route handlers. Firestore rules deny all direct client access.
 - ID tokens are verified server-side, and roles come from the server, never the client.
 - Every read and write is scoped to the caller's session.
-- Inputs and stored documents are validated with Zod. Error responses are generic and logs redact credentials.
+- Inputs and stored documents are validated with Zod; JSON bodies require `application/json` and are size-capped (413). Error responses are generic and logs redact credentials recursively, including bearer tokens and API keys inside messages.
+- Content-Security-Policy, HSTS, COOP, `X-Frame-Options: DENY`, `nosniff` and a locked-down Permissions-Policy are sent on every response ([next.config.ts](next.config.ts)).
+- Local no-Firebase mode fails closed: it only activates when `NODE_ENV` is explicitly `development` or `test`.
 - AI is read-only: it sees a bounded snapshot of the caller's own session, cannot mutate data, and its answers are rejected if they cite numbers or centres that are not in that snapshot. Questions are rate limited and fenced as data, not instructions.
 - Consequential actions (transfers) need explicit human approval at each step and are idempotent and audited.
 

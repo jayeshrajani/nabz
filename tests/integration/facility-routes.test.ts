@@ -108,4 +108,14 @@ describe("POST /api/facilities/[id]/updates", () => {
     const res = await routes.updates.POST(post(A, { kind: "footfall", today: 1 }, { "idempotency-key": "bad key!" }), ctx(FACILITY));
     expect(res.status).toBe(400);
   });
+
+  it("rate limits writes per user with 429", async () => {
+    const C = "55555555-5555-4555-8555-555555555555";
+    await routes.session.POST(new Request("http://test", { method: "POST", headers: auth(C) }));
+    const { RATE_LIMITS } = await import("@/lib/api/guard");
+    const statuses: number[] = [];
+    for (let i = 0; i <= RATE_LIMITS.write; i++) statuses.push((await routes.updates.POST(post(C, { kind: "footfall", today: 1 }), ctx(FACILITY))).status);
+    expect(statuses.at(-1)).toBe(429);
+    expect(statuses.slice(0, -1).every((s) => s === 200)).toBe(true);
+  });
 });

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #f1f4ef;
+  --color-paper: #f3f6f8;
   --color-surface: #ffffff;
-  --color-surface-2: #f6f8f4;
-  --color-line: #e1e6de;
-  --color-line-strong: #c9d1c6;
+  --color-surface-2: #edf2f4;
+  --color-line: #dce4e7;
+  --color-line-strong: #becdd1;
   --color-ink: #10201b;
   --color-ink-muted: #4b5a54;
   --color-ink-subtle: #7b8882;
@@ -15,6 +15,10 @@
   --color-mint: #9fe8c2;
   --color-brand: #0f7a5f;
   --color-brand-soft: #e1f2ea;
+  --color-citron: #e5f47b;
+  --color-cyan: #087f8c;
+  --color-sky: #e0f0f5;
+  --color-coral: #f8d6cc;
 
   --color-ok: #2f9e76;
   --color-ok-ink: #17714f;
@@ -30,8 +34,8 @@
   --font-display: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius-card: 22px;
-  --radius-hero: 30px;
+  --radius-card: 8px;
+  --radius-hero: 8px;
   --shadow-card: 0 1px 1px rgb(16 32 27 / 0.03), 0 10px 30px -18px rgb(16 32 27 / 0.18);
   --shadow-lift: 0 2px 4px rgb(16 32 27 / 0.04), 0 18px 40px -20px rgb(16 32 27 / 0.28);
 
@@ -45,10 +49,8 @@
 
 body {
   background:
-    radial-gradient(1100px 520px at 0% -8%, rgb(159 232 194 / 0.42), transparent 62%),
-    radial-gradient(900px 480px at 100% 0%, rgb(240 173 50 / 0.13), transparent 60%),
-    radial-gradient(1200px 700px at 50% 110%, rgb(15 122 95 / 0.1), transparent 60%),
-    #eaf0e8;
+    radial-gradient(circle at 1px 1px, rgb(16 32 27 / 0.055) 1px, transparent 0) 0 0 / 24px 24px,
+    var(--color-paper);
   background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -122,6 +124,6 @@ body {
 @utility eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }

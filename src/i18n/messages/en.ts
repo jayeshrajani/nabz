@@ -238,6 +238,19 @@ export const en = {
   "transfers.donor": "Sends",
   "transfers.receiver": "Receives",
   "runout.restockMark": "Restock arrives",
+  "intervene.title": "Flagged for district intervention",
+  "intervene.subtitle": "Raised automatically for district administrators, with the next step for each centre.",
+  "intervene.urgent": "Urgent",
+  "intervene.high": "High",
+  "intervene.kind.underperforming": "Underperforming",
+  "intervene.kind.underResourced": "Under-resourced",
+  "intervene.load": "{n} patients per doctor today",
+  "intervene.action.deployRelief": "Deploy a relief doctor",
+  "intervene.action.approveTransfer": "Approve the suggested stock transfer",
+  "intervene.action.emergencyRestock": "Raise an emergency restock",
+  "intervene.action.referPatients": "Refer admissions to a nearby centre",
+  "intervene.action.restockTests": "Send test kits",
+  "intervene.action.surgeSupport": "Add OPD staff for the patient load",
 } as const;
 
 export type MessageKey = keyof typeof en;

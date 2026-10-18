@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { TransferActionSchema } from "@/domain/redistribution";
 import { apiHandler, type ApiContext } from "@/lib/api/handler";
+import { authorize } from "@/lib/api/guard";
 import { idempotencyKey, readJson } from "@/lib/api/request";
 import { can } from "@/lib/auth/roles";
-import { authenticate } from "@/lib/auth/server";
 import { getRepository } from "@/lib/data";
 import { loadDistrictView } from "@/lib/data/views";
 import { AppError } from "@/lib/errors/app-error";
@@ -13,7 +13,7 @@ const TRANSFER_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 /** Human-approved workflow step: approve (reserve) → dispatch → receive, or cancel. */
 export const POST = apiHandler("transfer.advance", async ({ request, route }: ApiContext<RouteContext<"/api/transfers/[id]">>) => {
-  const principal = await authenticate(request);
+  const principal = await authorize(request, null, "write");
   const { action } = await readJson(request, BodySchema);
   const capability = action === "approve" || action === "cancel" ? "transfer:approve" : "facility:write";
   if (!can(principal, capability)) throw new AppError("FORBIDDEN", `Missing ${capability} capability.`);

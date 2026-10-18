@@ -1,11 +1,10 @@
 "use client";
 
-import { Languages, Sparkles } from "lucide-react";
+import { Languages } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { BRAND } from "@/config/brand";
-import { useAssistant } from "@/features/assistant/assistant-context";
 import { LOCALES, isLocale, type MessageKey } from "@/i18n";
 import { setLocale, useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
@@ -19,7 +18,6 @@ const TABS: { href: string; label: MessageKey; match: (p: string) => boolean }[]
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t, locale } = useI18n();
-  const { setOpen } = useAssistant();
 
   return (
     <div className="min-h-dvh">
@@ -65,13 +63,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 ))}
               </select>
             </label>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="hidden h-9 items-center gap-1.5 rounded-full bg-forest px-4 text-sm font-medium text-white transition-colors hover:bg-forest-2 sm:inline-flex"
-            >
-              <Sparkles aria-hidden className="size-4 text-mint" /> {t("nav.ask")}
-            </button>
           </div>
         </div>
       </header>
@@ -80,14 +71,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={t("nav.ask")}
-        className="fixed right-5 bottom-5 z-30 grid size-14 place-items-center rounded-full bg-forest text-mint shadow-(--shadow-lift) transition-transform hover:scale-105 sm:hidden"
-      >
-        <Sparkles aria-hidden className="size-6" />
-      </button>
     </div>
   );
 }

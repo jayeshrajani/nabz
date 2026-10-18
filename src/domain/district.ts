@@ -1,4 +1,5 @@
 import { footfallOutlook, forecastStock, type FootfallOutlook, type StockForecast } from "./forecast";
+import { flagInterventions, type InterventionFlag } from "./interventions";
 import type { AuditEvent } from "./operations";
 import { suggestTransfers, type Transfer, type TransferSuggestion } from "./redistribution";
 import { assessFacility, type FacilityAssessment, type RiskDomain } from "./risk";
@@ -34,6 +35,8 @@ export interface DistrictView {
   facilities: AssessedFacility[];
   /** Highest-burden centres, worst first. Score = 3 per critical signal + 1 per warning. */
   struggling: StrugglingFacility[];
+  /** Centres automatically flagged to district administrators, with recommended interventions. */
+  interventions: InterventionFlag[];
   /** District-wide daily arrivals, oldest first (sum across centres, aligned to the latest day). */
   footfallSeries: number[];
   transfers: Transfer[];
@@ -90,14 +93,16 @@ export function buildDistrictView(district: District, facilities: readonly Facil
     if (!summary.lastUpdated || facility.updatedAt > summary.lastUpdated) summary.lastUpdated = facility.updatedAt;
   }
 
+  const suggestions = suggestTransfers(facilities, transfers);
   return {
     district,
     summary,
     facilities: assessed,
     struggling: rankStruggling(assessed),
+    interventions: flagInterventions(assessed, suggestions),
     footfallSeries: districtFootfall(facilities),
     transfers: [...transfers],
-    suggestions: suggestTransfers(facilities, transfers),
+    suggestions,
   };
 }
 

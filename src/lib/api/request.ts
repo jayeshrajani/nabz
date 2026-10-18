@@ -3,12 +3,38 @@ import { AppError } from "@/lib/errors/app-error";
 
 export const MAX_BODY_BYTES = 8 * 1024;
 
+/** Reads the body chunk by chunk and aborts once it exceeds `maxBytes`, whatever Content-Length claims. */
+async function readBounded(request: Request, maxBytes: number): Promise<string> {
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel();
+      throw new AppError("PAYLOAD_TOO_LARGE", "Request body is too large.");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const c of chunks) {
+    bytes.set(c, offset);
+    offset += c.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 export async function readJson<S extends z.ZodType>(request: Request, schema: S, maxBytes = MAX_BODY_BYTES): Promise<z.infer<S>> {
+  const contentType = request.headers.get("content-type");
+  if (contentType && !/^application\/json\b/i.test(contentType)) throw new AppError("VALIDATION_FAILED", "Content-Type must be application/json.");
   const declared = Number(request.headers.get("content-length") ?? 0);
   if (declared > maxBytes) throw new AppError("PAYLOAD_TOO_LARGE", "Request body is too large.");
 
-  const text = await request.text();
-  if (new TextEncoder().encode(text).byteLength > maxBytes) throw new AppError("PAYLOAD_TOO_LARGE", "Request body is too large.");
+  const text = await readBounded(request, maxBytes);
 
   let raw: unknown;
   try {

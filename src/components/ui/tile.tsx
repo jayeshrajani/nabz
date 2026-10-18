@@ -26,14 +26,14 @@ export function Tile({
       aria-labelledby={labelledBy}
       aria-label={labelledBy ? undefined : label}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-[26px] p-5 sm:p-6",
-        dark ? "bg-forest text-white shadow-(--shadow-lift)" : "border border-line bg-surface shadow-(--shadow-card)",
+        "relative flex min-w-0 flex-col overflow-hidden rounded-lg p-5 sm:p-6",
+        dark ? "bg-forest text-white" : "border border-line bg-surface text-ink",
         className,
       )}
     >
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className={cn("eyebrow flex items-center gap-2", dark ? "text-white/55" : "text-ink-subtle")}>
-          <Icon aria-hidden className="size-3.5" strokeWidth={2} />
+        <p className={cn("flex items-center gap-2.5 text-sm font-medium", dark ? "text-white/80" : "text-ink-muted")}>
+          <Icon aria-hidden className={cn("size-4", dark ? "text-citron" : "text-cyan")} strokeWidth={1.75} />
           {label}
         </p>
         {aside}

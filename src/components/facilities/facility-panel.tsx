@@ -28,7 +28,7 @@ export function FacilityPanel({ item, onClose }: { item: AssessedFacility; onClo
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="card flex h-full flex-col overflow-hidden"
+      className="card flex h-full flex-col overflow-hidden text-ink"
     >
       <header className="flex items-start justify-between gap-3 px-6 pt-6">
         <div className="min-w-0">

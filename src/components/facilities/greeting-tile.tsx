@@ -11,12 +11,10 @@ import { useI18n } from "@/i18n/provider";
 
 /** Greeting that doubles as the inline assistant; shares its conversation with the drawer. */
 export function GreetingTile({ view, className }: { view: DistrictView; className?: string }) {
-  const { t, number } = useI18n();
+  const { t } = useI18n();
   const { turns, send, setOpen } = useAssistant();
   const reduced = useReducedMotion();
   const city = view.district.name.replace(/ District$/, "");
-  const flagged = view.summary.critical + view.summary.warning;
-  const status = flagged ? t("greet.status", { count: number(flagged), total: number(view.summary.facilities) }) : t("greet.calm");
 
   return (
     <Tile
@@ -32,18 +30,15 @@ export function GreetingTile({ view, className }: { view: DistrictView; classNam
     >
       {turns.length === 0 ? (
         <div className="flex flex-1 flex-col">
-          <motion.h1
+          <motion.h2
             initial={reduced ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-5xl leading-[0.95] font-semibold tracking-tight sm:text-6xl"
+            className="font-display text-4xl leading-[0.95] font-semibold tracking-tight sm:text-5xl"
           >
             {t("greet.title", { district: city })}
-          </motion.h1>
+          </motion.h2>
           <p className="mt-5 font-mono text-[13px] leading-relaxed text-mint/90">
-            <span className="text-white/40">&gt; </span>
-            {status}
-            <br />
             <span className="text-white/40">&gt; </span>
             {t("greet.prompt", { district: city })}
             <span aria-hidden className="ml-0.5 inline-block h-3.5 w-2 translate-y-0.5 animate-pulse bg-mint" />
