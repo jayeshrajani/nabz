@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { DistrictView } from "@/domain/district";
 import { apiRequest } from "@/lib/api/client";
+import { ensureSession } from "@/lib/api/session";
 
 export type DistrictState =
   | { status: "loading" }
@@ -10,7 +11,7 @@ export type DistrictState =
   | { status: "ready"; view: DistrictView };
 
 async function loadDistrict(): Promise<DistrictView> {
-  await apiRequest<{ created: boolean }>("/api/session", { method: "POST" });
+  await ensureSession();
   return apiRequest<DistrictView>("/api/facilities");
 }
 

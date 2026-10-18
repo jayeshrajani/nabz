@@ -1,5 +1,5 @@
 export const BRAND = {
   name: "nabz",
-  tagline: "District health operations",
-  description: "See which health centres need help today: medicines, beds, doctors and tests across the district.",
+  tagline: "a pulse check for district health",
+  description: "See which health centres need a hand today: medicines, beds, doctors, tests and patients across the district.",
 } as const;

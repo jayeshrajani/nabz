@@ -11,7 +11,7 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 
 ---
 
-## V1 — Foundation + premium UX ✅ (awaiting approval)
+## V1 — Foundation + premium UX ✅
 
 **Scope:** skeleton, design system, 3D district network, Firebase-backed isolated demo sessions, security/observability foundations, Docker + CI.
 
@@ -42,15 +42,24 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 - Only anonymous demo identities are provisioned; admin/operator/viewer roles are defined but not issued
 - Alerts are computed on read, not persisted
 
-## V2 — Complete healthcare operations
+## V2 — Complete healthcare operations ✅ (awaiting approval)
 
-- [ ] Split history into subcollections (`inventoryMovements`, `dailyMetrics`, `attendance`, `diagnosticAudits`) with bounded, indexed queries
-- [ ] Mutation endpoints per domain (stock movement, footfall entry, bed update, attendance, diagnostic audit) — Zod-validated, capability-checked, transactional, audited
-- [ ] Forecasting module: moving average + optional trend, variability band (±σ), reorder point = avg × lead + safety stock, footfall forecast
-- [ ] Persisted alerts with thresholds; underperforming-facility ranking
-- [ ] Recharts operational charts; facility drilldown route `/facilities/[id]`
-- [ ] Emulator integration tests for transactions and rules
-- **Done when:** all five domains editable, persisted, reflected in dashboard; forecasts reproducible; invalid inputs rejected
+- [x] Visual identity: forest + mint palette, Bricolage Grotesque display type, "pulse" hero drawn from real 30-day district footfall, plain-language copy
+- [x] Single mutation endpoint `POST /api/facilities/[id]/updates` (discriminated union: beds, attendance, footfall, stock receive/issue/count, diagnostic) — Zod-validated, 8 KB body cap, `facility:write` capability, transactional
+- [x] Pure state transitions in `src/domain/operations.ts`; invariants enforced (no negative stock, occupied ≤ total, present ≤ scheduled); 422 `RULE_VIOLATION` on breach
+- [x] Idempotency keys (`Idempotency-Key` header) stored per session; replays return the original result; key reuse for a different request → 409
+- [x] Audit trail per facility (`facilities/{id}/audit`), inventory movements (`facilities/{id}/movements`)
+- [x] Forecasting (`src/domain/forecast.ts`): 7-day moving average level, damped 14-day OLS trend, ±1.28σ typical range, safety stock = 1.65σ√lead, reorder point, suggested order (lead + 14 days), stock-out day projection (expected + pessimistic), footfall surge detection
+- [x] Alerts derived deterministically from thresholds on every read (incl. new footfall surge signal)
+- [x] Underperforming centres ranking (`rankStruggling`: 3 per critical + 1 per warning, tie-break attendance)
+- [x] Facility drilldown `/facilities/[id]` + `GET /api/facilities/[id]`: Recharts patient history + 7-day outlook band, beds/doctors, medicines with days-left and reorder suggestion, tests, recent changes — all editable
+- [x] Bounded reads: facilities `limit(50)`, audit `orderBy(at desc).limit(20)` (single-field indexes only; no composite indexes required)
+- [x] Tests: forecast, operations, repository (idempotency, isolation, concurrent issues), facility route integration — 75 total
+- [ ] Firestore emulator tests for transactions and rules (deferred: needs Java + firebase-tools)
+- [ ] Persisted alert documents (alerts are recomputed on read instead; deterministic and always current)
+- [ ] Long history beyond 90 days (history arrays are capped in the facility document; split into daily subcollections if needed)
+
+**Endpoints added:** `GET /api/facilities/[id]`, `POST /api/facilities/[id]/updates`
 
 ## V3 — Cross-facility intelligence + explainability
 

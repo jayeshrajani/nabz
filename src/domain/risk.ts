@@ -1,7 +1,7 @@
 import type { Facility, MedicineStock } from "./schemas";
 
 export type Severity = "healthy" | "warning" | "critical";
-export type RiskDomain = "medicine" | "beds" | "staffing" | "diagnostics";
+export type RiskDomain = "medicine" | "beds" | "staffing" | "diagnostics" | "footfall";
 
 export interface RiskSignal {
   domain: RiskDomain;
@@ -43,6 +43,8 @@ export const THRESHOLDS = {
   /** Medicine coverage below lead time × this factor is a warning. */
   coverWarningFactor: 2,
   diagnosticKitDaysWarning: 3,
+  /** Today's arrivals at or above this multiple of the usual level is a surge. */
+  footfallSurgeRatio: 1.3,
 } as const;
 
 const SEVERITY_RANK: Record<Severity, number> = { healthy: 0, warning: 1, critical: 2 };
@@ -140,6 +142,12 @@ export function assessFacility(f: Facility): FacilityAssessment {
     }
   }
 
+  const footfallToday = f.footfall.at(-1) ?? null;
+  const usual = movingAverage(f.footfall.slice(0, -1));
+  if (footfallToday !== null && usual !== null && usual > 0 && footfallToday >= usual * THRESHOLDS.footfallSurgeRatio) {
+    signals.push({ domain: "footfall", severity: "warning", message: `Busier than usual, ${footfallToday} patients against about ${Math.round(usual)}` });
+  }
+
   signals.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]);
   const status = signals.reduce<Severity>(
     (worst, s) => (SEVERITY_RANK[s.severity] > SEVERITY_RANK[worst] ? s.severity : worst),
@@ -152,7 +160,7 @@ export function assessFacility(f: Facility): FacilityAssessment {
     medicines,
     bedOccupancy,
     attendanceRate,
-    footfallToday: f.footfall.at(-1) ?? null,
+    footfallToday,
     footfallAverage7d: movingAverage(f.footfall),
   };
 }

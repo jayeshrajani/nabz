@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #f2f5f4;
+  --color-paper: #f1f4ef;
   --color-surface: #ffffff;
-  --color-surface-2: #f7f9f8;
-  --color-line: #e3e9e6;
-  --color-line-strong: #cdd7d3;
-  --color-ink: #13211c;
-  --color-ink-muted: #4f5e58;
-  --color-ink-subtle: #7b8984;
+  --color-surface-2: #f6f8f4;
+  --color-line: #e1e6de;
+  --color-line-strong: #c9d1c6;
+  --color-ink: #10201b;
+  --color-ink-muted: #4b5a54;
+  --color-ink-subtle: #7b8882;
 
-  --color-brand: #0e7c66;
-  --color-brand-soft: #e2f1ec;
+  --color-forest: #0c2a23;
+  --color-forest-2: #12372e;
+  --color-mint: #9fe8c2;
+  --color-brand: #0f7a5f;
+  --color-brand-soft: #e1f2ea;
 
-  --color-ok: #2a9d78;
-  --color-ok-ink: #16735a;
-  --color-ok-soft: #e4f4ee;
-  --color-watch: #e0a32e;
-  --color-watch-ink: #8f620b;
-  --color-watch-soft: #fcf3df;
-  --color-alert: #e05a4e;
-  --color-alert-ink: #b0372d;
-  --color-alert-soft: #fcecea;
+  --color-ok: #2f9e76;
+  --color-ok-ink: #17714f;
+  --color-ok-soft: #e2f3ea;
+  --color-watch: #f0ad32;
+  --color-watch-ink: #855905;
+  --color-watch-soft: #fcf1da;
+  --color-alert: #ef5f4f;
+  --color-alert-ink: #ad3224;
+  --color-alert-soft: #fde9e5;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius-card: 18px;
-  --shadow-card: 0 1px 2px rgb(19 33 28 / 0.04), 0 8px 24px -12px rgb(19 33 28 / 0.08);
+  --radius-card: 22px;
+  --radius-hero: 30px;
+  --shadow-card: 0 1px 1px rgb(16 32 27 / 0.03), 0 10px 30px -18px rgb(16 32 27 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(16 32 27 / 0.04), 0 18px 40px -20px rgb(16 32 27 / 0.28);
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
-  --duration-fast: 150ms;
+  --duration-fast: 160ms;
 }
 
 :root {
@@ -38,18 +44,21 @@
 }
 
 body {
-  background: var(--color-canvas);
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--color-brand-soft);
+  background: var(--color-mint);
+  color: var(--color-forest);
 }
 
 :focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -71,4 +80,11 @@ body {
 
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

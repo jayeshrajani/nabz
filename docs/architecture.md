@@ -19,16 +19,47 @@
 4. The repository reads/writes only under `demoSessions/{sessionId}`.
 5. Domain functions compute assessments; the response is returned with `cache-control: no-store`.
 
-## Firestore layout (V1)
+## Firestore layout
 
 ```
-demoSessions/{sessionId}                 District { id, name, synthetic: true, historyEndDate, createdAt }
-demoSessions/{sessionId}/facilities/{id} Facility (see src/domain/schemas.ts)
+demoSessions/{sessionId}                                   District { id, name, synthetic: true, historyEndDate, createdAt }
+demoSessions/{sessionId}/facilities/{id}                   Facility (see src/domain/schemas.ts)
+demoSessions/{sessionId}/facilities/{id}/audit/{eventId}   AuditEvent { kind, summary, actorUid, at }
+demoSessions/{sessionId}/facilities/{id}/movements/{id}    InventoryMovement { medicineId, movement, delta, balanceAfter }
+demoSessions/{sessionId}/idempotency/{key}                 { facilityId, kind, audit }
 ```
 
-Reads are bounded (`limit(50)`) and each document is validated with Zod before use. Session bootstrap runs inside a transaction so concurrent first requests cannot double-seed.
+Reads are bounded (`limit(50)` facilities, `limit(20)` audit events) and each document is validated with Zod before use. All queries use single-field ordering, so no composite indexes are required. Session bootstrap runs inside a transaction so concurrent first requests cannot double-seed.
 
-## Risk method (V1)
+## Write path
+
+`POST /api/facilities/[id]/updates` → authenticate → `facility:write` capability → 8 KB body cap → Zod discriminated union → Firestore transaction:
+
+1. Read the facility and (if supplied) the idempotency record.
+2. If the key exists: same facility and kind → return the original result; otherwise 409.
+3. Apply the pure `applyFacilityUpdate()` (throws `DomainRuleError` → 422) and re-validate the result with `FacilitySchema`.
+4. Write facility, audit event, movement (stock only) and idempotency record atomically.
+
+Firestore retries contended transactions, so concurrent updates to a facility serialise and cannot drive stock negative.
+
+## Forecasting method (`src/domain/forecast.ts`)
+
+All forecasts are computed server-side from stored history; identical history gives identical output.
+
+| Quantity | Method |
+| --- | --- |
+| Level | Mean of the last 7 days (needs ≥ 3 days, otherwise "not enough history") |
+| Trend | OLS slope over the last 14 days, halved (damped) |
+| Typical range | expected ± 1.28 × sample standard deviation of the last 14 days (~80% band under a normal approximation; shown as "anywhere from X to Y", not as a confidence score) |
+| Days until stock-out | Step through forecast demand day by day until stock is exhausted (capped at one year); pessimistic variant uses the high end of the range |
+| Safety stock | 1.65 × σ × √(lead time) |
+| Reorder point | level × lead time + safety stock |
+| Suggested order | level × (lead time + 14 days) + safety stock − current stock |
+| Footfall surge | today ≥ 1.3 × mean of the previous 7 days |
+
+Underperforming centres are ranked by 3 points per critical signal and 1 per warning, with ties broken by lower doctor attendance.
+
+## Risk thresholds
 
 - Average daily consumption = mean of the last 7 recorded days (requires ≥ 3 days; otherwise "insufficient history").
 - Days of cover = stock ÷ average. Zero consumption → unlimited.
@@ -36,6 +67,7 @@ Reads are bounded (`limit(50)`) and each document is validated with Zod before u
 - Beds: warning ≥ 85 %, critical ≥ 95 % occupancy.
 - Doctors: warning < 75 %, critical < 50 % attendance.
 - Diagnostics: critical when unavailable or 0 kits; warning when < 3 days of kits.
+- Footfall: warning when today is ≥ 1.3 × the previous 7-day mean.
 
 Thresholds live in `THRESHOLDS` in `src/domain/risk.ts`.
 

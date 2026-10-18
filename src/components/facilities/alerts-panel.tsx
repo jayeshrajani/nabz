@@ -18,17 +18,17 @@ export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFaci
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="card flex h-full flex-col p-5"
+      className="card flex h-full flex-col p-6"
     >
-      <h2 id="attention-heading" className="text-base font-semibold">
-        Needs attention
+      <h2 id="attention-heading" className="font-display text-xl font-semibold tracking-tight">
+        Who needs a hand
       </h2>
-      <p className="mt-0.5 text-sm text-ink-muted">Select a centre to see what is happening.</p>
+      <p className="mt-1 text-sm text-ink-muted">Tap a centre for the full story.</p>
 
       {flagged.length === 0 ? (
-        <p className="m-auto text-sm text-ink-muted">Every centre is stable right now.</p>
+        <p className="m-auto text-sm text-ink-muted">Quiet day. Nobody is struggling.</p>
       ) : (
-        <ol className="-mx-2 mt-4 flex flex-col overflow-y-auto">
+        <ol className="-mx-3 mt-4 flex flex-col overflow-y-auto">
           {flagged.map(({ facility, assessment }) => {
             const [top, ...rest] = assessment.signals;
             return (
@@ -36,16 +36,16 @@ export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFaci
                 <button
                   type="button"
                   onClick={() => onSelect(facility.id)}
-                  className="group flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-surface-2"
+                  className="group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-surface-2"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-medium text-ink">{facility.name}</span>
+                      <span className="truncate font-medium text-ink">{facility.name}</span>
                       <StatusBadge severity={assessment.status} className="shrink-0" />
                     </span>
                     <span className="mt-1 block truncate text-sm text-ink-muted">
                       {top?.message}
-                      {rest.length > 0 && <span className="text-ink-subtle"> and {rest.length} more</span>}
+                      {rest.length > 0 && <span className="text-ink-subtle">, +{rest.length} more</span>}
                     </span>
                   </span>
                   <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" />

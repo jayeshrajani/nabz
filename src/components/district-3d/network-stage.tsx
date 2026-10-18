@@ -24,7 +24,7 @@ const noopSubscribe = () => () => {};
 
 function StageMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid size-full place-items-center bg-[#eef3f1]">
+    <div className="grid size-full place-items-center bg-[#f4f7f2]">
       <p className="animate-pulse text-sm text-ink-subtle">{children}</p>
     </div>
   );

@@ -1,8 +1,12 @@
+import { DomainRuleError } from "@/domain/operations";
+
 export type ErrorCode =
   | "UNAUTHENTICATED"
   | "FORBIDDEN"
   | "VALIDATION_FAILED"
   | "NOT_FOUND"
+  | "CONFLICT"
+  | "RULE_VIOLATION"
   | "PAYLOAD_TOO_LARGE"
   | "UNAVAILABLE"
   | "INTERNAL";
@@ -12,6 +16,8 @@ const STATUS: Record<ErrorCode, number> = {
   FORBIDDEN: 403,
   VALIDATION_FAILED: 400,
   NOT_FOUND: 404,
+  CONFLICT: 409,
+  RULE_VIOLATION: 422,
   PAYLOAD_TOO_LARGE: 413,
   UNAVAILABLE: 503,
   INTERNAL: 500,
@@ -32,5 +38,6 @@ export class AppError extends Error {
 
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
+  if (error instanceof DomainRuleError) return new AppError("RULE_VIOLATION", error.message, { cause: error });
   return new AppError("INTERNAL", "An unexpected error occurred.", { cause: error });
 }

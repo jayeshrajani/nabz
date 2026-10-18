@@ -12,7 +12,7 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect }: Omit<Net
   const byId = new Map(facilities.map((f) => [f.facility.id, f.facility]));
 
   return (
-    <div className="relative size-full bg-[#eef3f1]">
+    <div className="relative size-full bg-[#f4f7f2]">
       <svg aria-hidden className="absolute inset-0 size-full">
         {facilities.flatMap(({ facility }) =>
           facility.links

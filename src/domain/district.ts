@@ -1,4 +1,6 @@
-import { assessFacility, type FacilityAssessment } from "./risk";
+import { footfallOutlook, forecastStock, type FootfallOutlook, type StockForecast } from "./forecast";
+import type { AuditEvent } from "./operations";
+import { assessFacility, type FacilityAssessment, type RiskDomain } from "./risk";
 import type { District, Facility } from "./schemas";
 
 export interface AssessedFacility {
@@ -19,10 +21,43 @@ export interface DistrictSummary {
   lastUpdated: string | null;
 }
 
+export interface StrugglingFacility {
+  facilityId: string;
+  score: number;
+  domains: RiskDomain[];
+}
+
 export interface DistrictView {
   district: District;
   summary: DistrictSummary;
   facilities: AssessedFacility[];
+  /** Highest-burden centres, worst first. Score = 3 per critical signal + 1 per warning. */
+  struggling: StrugglingFacility[];
+  /** District-wide daily arrivals, oldest first (sum across centres, aligned to the latest day). */
+  footfallSeries: number[];
+}
+
+export function rankStruggling(assessed: readonly AssessedFacility[], limit = 3): StrugglingFacility[] {
+  return assessed
+    .map(({ facility, assessment }) => {
+      const score = assessment.signals.reduce((s, sig) => s + (sig.severity === "critical" ? 3 : 1), 0);
+      const domains = [...new Set(assessment.signals.map((s) => s.domain))];
+      return { facilityId: facility.id, score, domains, attendance: assessment.attendanceRate ?? 1 };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score || a.attendance - b.attendance || a.facilityId.localeCompare(b.facilityId))
+    .slice(0, limit)
+    .map(({ facilityId, score, domains }) => ({ facilityId, score, domains }));
+}
+
+function districtFootfall(facilities: readonly Facility[]): number[] {
+  const length = Math.max(0, ...facilities.map((f) => f.footfall.length));
+  const out = new Array<number>(length).fill(0);
+  for (const f of facilities) {
+    const offset = length - f.footfall.length;
+    f.footfall.forEach((v, i) => (out[offset + i]! += v));
+  }
+  return out;
 }
 
 export function buildDistrictView(district: District, facilities: readonly Facility[]): DistrictView {
@@ -52,5 +87,25 @@ export function buildDistrictView(district: District, facilities: readonly Facil
     if (!summary.lastUpdated || facility.updatedAt > summary.lastUpdated) summary.lastUpdated = facility.updatedAt;
   }
 
-  return { district, summary, facilities: assessed };
+  return { district, summary, facilities: assessed, struggling: rankStruggling(assessed), footfallSeries: districtFootfall(facilities) };
+}
+
+export interface FacilityDetail {
+  district: District;
+  facility: Facility;
+  assessment: FacilityAssessment;
+  stock: StockForecast[];
+  footfall: FootfallOutlook;
+  activity: AuditEvent[];
+}
+
+export function buildFacilityDetail(district: District, facility: Facility, activity: AuditEvent[]): FacilityDetail {
+  return {
+    district,
+    facility,
+    assessment: assessFacility(facility),
+    stock: facility.medicines.map(forecastStock),
+    footfall: footfallOutlook(facility.footfall),
+    activity,
+  };
 }

@@ -14,8 +14,8 @@ export interface NetworkProps {
   animate: boolean;
 }
 
-const BACKGROUND = "#eef3f1";
-const OVERVIEW_CAMERA = new THREE.Vector3(0, 24, 34);
+const BACKGROUND = "#f4f7f2";
+const OVERVIEW_CAMERA = new THREE.Vector3(0, 40, 34);
 
 function stemHeight(item: AssessedFacility): number {
   return 0.6 + Math.min(3, (item.assessment.footfallToday ?? 0) / 80);
@@ -43,7 +43,7 @@ function FacilityNode({
   const { facility, assessment } = item;
   const color = SEVERITY_META[assessment.status].hex;
   const isChc = facility.type === "CHC";
-  const size = isChc ? 1.3 : 0.62;
+  const size = isChc ? 1.6 : 0.8;
   const height = stemHeight(item);
   const scaleGoal = selected ? 1.25 : hovered ? 1.12 : 1;
   const opacity = dimmed ? 0.3 : 1;
@@ -185,20 +185,16 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
 
   return (
     <Canvas
-      camera={{ position: OVERVIEW_CAMERA.toArray(), fov: 36, near: 0.5, far: 200 }}
+      camera={{ position: OVERVIEW_CAMERA.toArray(), fov: 38, near: 0.5, far: 200 }}
       dpr={[1, 1.75]}
       frameloop={animate ? "always" : "demand"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => onSelect(null)}
     >
       <color attach="background" args={[BACKGROUND]} />
-      <fog attach="fog" args={[BACKGROUND, 45, 95]} />
+      <fog attach="fog" args={[BACKGROUND, 60, 120]} />
       <hemisphereLight args={["#ffffff", "#dfe8e4", 1.6]} />
       <directionalLight position={[8, 20, 6]} intensity={1.4} />
-      <mesh rotation-x={-Math.PI / 2} position-y={-0.01}>
-        <circleGeometry args={[34, 96]} />
-        <meshBasicMaterial color="#f8fbfa" />
-      </mesh>
       <ContactShadows position={[0, 0, 0]} scale={70} opacity={0.28} blur={2.4} far={8} frames={1} color="#2c4a40" />
       <Links facilities={facilities} selectedId={selectedId} />
       {facilities.map((item) => (
@@ -212,7 +208,7 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
         />
       ))}
       <CameraRig focus={selected ? selected.facility.position : null} animate={animate} />
-      <OrbitControls makeDefault enablePan={false} minDistance={10} maxDistance={60} maxPolarAngle={Math.PI / 2.4} enableDamping={animate} />
+      <OrbitControls makeDefault enablePan={false} minDistance={10} maxDistance={75} maxPolarAngle={Math.PI / 2.4} enableDamping={animate} />
     </Canvas>
   );
 }

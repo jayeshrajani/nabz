@@ -2,19 +2,20 @@
 
 District healthcare operations intelligence for Primary and Community Health Centres (PHCs/CHCs). It tracks medicine stock, patient footfall, beds, doctor attendance and diagnostic availability, then flags which facilities need attention and why.
 
-> **Status: V1 (foundation).** All data is synthetic and fictional. See [plan.md](plan.md) for what is implemented and what is planned.
+> **Status: V2 (operations).** All data is synthetic and fictional. See [plan.md](plan.md) for what is implemented and what is planned.
 
 ## What works today
 
-- District Command Centre with KPIs, priority alerts, facility details and a searchable, filterable directory
-- Interactive 3D district network (React Three Fiber) with an accessible 2D fallback and reduced-motion support
-- Deterministic risk assessment: medicine days-of-cover vs lead time, bed occupancy, staffing gaps, diagnostic shortages ([method](docs/architecture.md#risk-method-v1))
+- **District pulse:** a plain-language summary of who needs a hand, the district's 30-day patient "pulse", an interactive 3D map (with 2D fallback), and a ranking of the centres carrying the most weight
+- **Facility workspace** (`/facilities/[id]`): patients with a 7-day outlook, beds, doctors, medicines with days-left and reorder suggestions, tests, and a log of recent changes
+- **All five domains are editable:** stock received/used/counted, beds, attendance, today's patients, and test availability. Every change is validated, transactional, idempotent and audited
+- **Deterministic forecasting and alerts** ([method](docs/architecture.md#forecasting-method-srcdomainforecastts)): no ML and no randomness, so the same history always gives the same forecast
 - Isolated demo sessions: each anonymous visitor gets their own seeded dataset in Firestore
 - Server-side auth, Zod validation, structured logs, health endpoint, Docker image, CI
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · React Three Fiber + Drei · Motion · Zod · Firebase Auth + Firestore (Admin SDK) · Vitest · Cloud Run
+Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · React Three Fiber + Drei · Motion · Recharts · Zod · Firebase Auth + Firestore (Admin SDK) · Vitest · Cloud Run
 
 ## Run locally
 
