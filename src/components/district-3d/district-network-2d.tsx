@@ -12,7 +12,7 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect, labels }: 
   const byId = new Map(facilities.map((f) => [f.facility.id, f.facility]));
 
   return (
-    <div className="relative size-full bg-[#f4f7f2]">
+    <div className="relative size-full bg-[#0b231d]">
       <svg aria-hidden className="absolute inset-0 size-full">
         {facilities.flatMap(({ facility }) =>
           facility.links
@@ -27,7 +27,7 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect, labels }: 
                   y1={toPct(facility.position.z)}
                   x2={toPct(other.position.x)}
                   y2={toPct(other.position.z)}
-                  stroke={active ? "#0e7c66" : "#c5d2cd"}
+                  stroke={active ? "#9fe8c2" : "#2c5a4c"}
                   strokeWidth={active ? 2 : 1.5}
                 />
               );
@@ -49,13 +49,13 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect, labels }: 
               >
                 <span
                   className={cn(
-                    "block shadow-sm ring-4 ring-white transition-transform duration-(--duration-fast) group-hover:scale-110",
+                    "block shadow-sm ring-4 ring-[#0b231d] transition-transform duration-(--duration-fast) group-hover:scale-110",
                     facility.type === "CHC" ? "size-5 rounded-md" : "size-4 rounded-full",
-                    selected && "scale-125 ring-brand/30",
+                    selected && "scale-125 ring-mint/40",
                   )}
                   style={{ backgroundColor: meta.hex }}
                 />
-                <span className="hidden text-xs whitespace-nowrap text-ink-muted sm:block">{facility.name.replace(/^(PHC|CHC) /, "")}</span>
+                <span className="hidden text-xs whitespace-nowrap text-white/70 sm:block">{facility.name.replace(/^(PHC|CHC) /, "")}</span>
               </button>
             </li>
           );

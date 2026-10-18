@@ -77,6 +77,10 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 ## V4 — Multilingual copilot + hardening (in progress)
 
 - [x] Three tabs: Overview, Centres, Transfers; centre workspace at `/facilities/[id]`
+- [x] Dark dotted map hero with responsive attention/facility panel; explicit light-card foreground prevents inherited white text
+- [x] Operational KPI strip, stock-out countdown/runway watch with restock lead-time markers and transfer options
+- [x] Historical patient analysis, rolling averages, week-over-week comparisons and medicine-consumption trends; pure insights regression tests
+- [x] Searchable/filterable/sortable Centres table and Transfers KPI/workflow board with before/after coverage
 - [x] Seven languages: English, Hindi, Bengali, Tamil, Telugu, Marathi, Kannada (`src/i18n`); every key and placeholder verified by tests; risk signals carry codes + params so they render in any language
 - [x] "Ask nabz" copilot (`POST /api/assistant`): read-only, grounded in a bounded snapshot of the caller's own session, answers in the selected language, labels facts as recorded vs forecast
 - [x] Anti-fabrication: AI answers rejected if they cite unknown centres or numbers absent from the grounding context; falls back to a deterministic localised answer when AI is off, slow or invalid

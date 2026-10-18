@@ -6,7 +6,8 @@ District healthcare operations intelligence for Primary and Community Health Cen
 
 ## What works today
 
-- **Three tabs:** Overview (bento grid: greeting tile that doubles as the AI assistant, patients-today gauge, centre health matrix, 3D map, who needs a hand, most-burdened centres), Centres (filterable directory), Transfers (suggested moves and the approval workflow)
+- **Three tabs:** Overview (inline AI greeting, patient gauge, centre health matrix, dark dotted district map with a facility/attention panel, operational KPIs, stock-out watch, historical analysis and most-burdened centres), Centres (searchable, filterable, sortable operations table), Transfers (KPIs, workflow board and suggestions with before/after coverage)
+- **Stock-out watch:** urgent countdowns, stock runway bars, restock lead-time markers and available transfer options; historical analysis shows patient trends, rolling averages, week-over-week changes and medicine consumption
 - **Seven languages:** English, हिन्दी, বাংলা, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, switchable from the header; risk alerts are rendered from codes so they translate too
 - **Ask nabz:** a chat assistant that answers questions about the district in the selected language, using only your session's data; Gemini first, Cerebras fallback, and a computed answer if AI is unavailable
 - **Cross-centre transfers:** nabz pairs centres about to run out with centres that can safely spare stock, explains why, and runs a human-approved workflow (approve holds stock, dispatch removes it, receipt adds it)

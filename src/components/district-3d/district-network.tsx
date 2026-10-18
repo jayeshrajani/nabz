@@ -1,8 +1,8 @@
 "use client";
 
-import { ContactShadows, Html, Line, OrbitControls, QuadraticBezierLine, RoundedBox, useCursor } from "@react-three/drei";
+import { Html, Line, OrbitControls, QuadraticBezierLine, RoundedBox, useCursor } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { SEVERITY_META } from "@/components/ui/status-badge";
 import type { AssessedFacility } from "@/domain/district";
@@ -19,7 +19,7 @@ export interface NetworkProps {
   transfers?: Transfer[];
 }
 
-const BACKGROUND = "#f4f7f2";
+export const MAP_BACKGROUND = "#0b231d";
 const OVERVIEW_CAMERA = new THREE.Vector3(0, 40, 34);
 
 function stemHeight(item: AssessedFacility): number {
@@ -83,7 +83,7 @@ function FacilityNode({
     <group position={[facility.position.x, 0, facility.position.z]}>
       <mesh rotation-x={-Math.PI / 2} position-y={0.01}>
         <circleGeometry args={[size * 1.15, 48]} />
-        <meshBasicMaterial color={color} transparent opacity={0.16 * opacity} />
+        <meshBasicMaterial color={color} transparent opacity={0.22 * opacity} />
       </mesh>
       {assessment.status === "critical" && (
         <mesh ref={pulse} rotation-x={-Math.PI / 2} position-y={0.02}>
@@ -93,17 +93,17 @@ function FacilityNode({
       )}
       <mesh position-y={height / 2}>
         <cylinderGeometry args={[0.04, 0.04, height, 8]} />
-        <meshStandardMaterial color="#b9c7c1" transparent opacity={opacity} />
+        <meshBasicMaterial color="#5c8f7f" transparent opacity={0.7 * opacity} />
       </mesh>
       <group ref={head} position-y={height + size / 2}>
         {isChc ? (
           <RoundedBox args={[size, size, size]} radius={0.22} smoothness={4} castShadow {...handlers}>
-            <meshStandardMaterial color={color} roughness={0.5} transparent opacity={opacity} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.6 : 0.28} roughness={0.45} transparent opacity={opacity} />
           </RoundedBox>
         ) : (
           <mesh castShadow {...handlers}>
             <sphereGeometry args={[size, 32, 32]} />
-            <meshStandardMaterial color={color} roughness={0.5} transparent opacity={opacity} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.6 : 0.28} roughness={0.45} transparent opacity={opacity} />
           </mesh>
         )}
       </group>
@@ -145,9 +145,65 @@ function Links({ facilities, selectedId }: { facilities: AssessedFacility[]; sel
     <>
       {edges.map((e) => {
         const active = selectedId !== null && e.ids.includes(selectedId);
-        return <Line key={e.key} points={[e.from, e.to]} color={active ? "#0e7c66" : "#c5d2cd"} lineWidth={active ? 2.5 : 1.5} />;
+        return <Line key={e.key} points={[e.from, e.to]} color={active ? "#9fe8c2" : "#2c5a4c"} lineWidth={active ? 2.5 : 1.2} />;
       })}
     </>
+  );
+}
+
+const DOT_SPACING = 1.15;
+
+/** Stylised district outline. Not geographic; gives the network a sense of place. */
+function insideDistrict(x: number, z: number): boolean {
+  const r = Math.hypot(x, z);
+  const a = Math.atan2(z, x);
+  return r < 25 + 2.6 * Math.sin(3 * a + 0.6) + 1.8 * Math.cos(5 * a + 1.3) + 1.2 * Math.sin(7 * a);
+}
+
+/** Dotted ground in the district shape; dots near a centre glow in that centre's status colour. */
+function DotGround({ facilities }: { facilities: AssessedFacility[] }) {
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  const points = useMemo(() => {
+    const out: { x: number; z: number; color: THREE.Color }[] = [];
+    const base = new THREE.Color("#2f6b59");
+    for (let x = -30; x <= 30; x += DOT_SPACING) {
+      for (let z = -30; z <= 30; z += DOT_SPACING) {
+        if (!insideDistrict(x, z)) continue;
+        let color = base.clone();
+        let best = Infinity;
+        for (const { facility, assessment } of facilities) {
+          const d = Math.hypot(facility.position.x - x, facility.position.z - z);
+          if (d < best && d < 4.5) {
+            best = d;
+            color = base.clone().lerp(new THREE.Color(SEVERITY_META[assessment.status].hex), 0.75 * (1 - d / 4.5));
+          }
+        }
+        out.push({ x, z, color });
+      }
+    }
+    return out;
+  }, [facilities]);
+
+  useLayoutEffect(() => {
+    const m = mesh.current;
+    if (!m) return;
+    const matrix = new THREE.Matrix4();
+    const rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
+    const scale = new THREE.Vector3(1, 1, 1);
+    points.forEach((p, i) => {
+      matrix.compose(new THREE.Vector3(p.x, 0, p.z), rotation, scale);
+      m.setMatrixAt(i, matrix);
+      m.setColorAt(i, p.color);
+    });
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+  }, [points]);
+
+  return (
+    <instancedMesh key={points.length} ref={mesh} args={[undefined, undefined, points.length]} raycast={() => null}>
+      <circleGeometry args={[0.17, 10]} />
+      <meshBasicMaterial toneMapped={false} />
+    </instancedMesh>
   );
 }
 
@@ -199,7 +255,7 @@ function TransferArcs({ facilities, transfers }: { facilities: AssessedFacility[
               start={[a.x, 0.2, a.z]}
               end={[b.x, 0.2, b.z]}
               mid={[(a.x + b.x) / 2, 5, (a.z + b.z) / 2]}
-              color={inTransit ? "#0f7a5f" : "#f0ad32"}
+              color={inTransit ? "#9fe8c2" : "#f0ad32"}
               lineWidth={3}
               dashed={!inTransit}
               dashSize={0.6}
@@ -228,11 +284,11 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate, lab
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => onSelect(null)}
     >
-      <color attach="background" args={[BACKGROUND]} />
-      <fog attach="fog" args={[BACKGROUND, 60, 120]} />
-      <hemisphereLight args={["#ffffff", "#dfe8e4", 1.6]} />
-      <directionalLight position={[8, 20, 6]} intensity={1.4} />
-      <ContactShadows position={[0, 0, 0]} scale={70} opacity={0.28} blur={2.4} far={8} frames={1} color="#2c4a40" />
+      <color attach="background" args={[MAP_BACKGROUND]} />
+      <fog attach="fog" args={[MAP_BACKGROUND, 55, 110]} />
+      <hemisphereLight args={["#d8f5e8", "#0b231d", 1.3]} />
+      <directionalLight position={[8, 20, 6]} intensity={1.6} />
+      <DotGround facilities={facilities} />
       <Links facilities={facilities} selectedId={selectedId} />
       <TransferArcs facilities={facilities} transfers={transfers} />
       {facilities.map((item) => (

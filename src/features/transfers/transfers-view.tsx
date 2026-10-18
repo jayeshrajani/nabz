@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRight, Check, Loader2, Sparkles, Truck } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Loader2, Package, Sparkles, Truck, Waypoints, type LucideIcon } from "lucide-react";
 import { useState } from "react";
+import { Tile } from "@/components/ui/tile";
 import type { DistrictView } from "@/domain/district";
 import type { Transfer, TransferAction, TransferSuggestion } from "@/domain/redistribution";
 import { useAssistant } from "@/features/assistant/assistant-context";
@@ -19,7 +20,14 @@ const NEXT_ACTIONS: Record<Transfer["status"], TransferAction[]> = {
   cancelled: [],
 };
 
-const STEPS: Transfer["status"][] = ["proposed", "approved", "dispatched", "received"];
+const COLUMNS: { status: Transfer["status"]; dot: string }[] = [
+  { status: "proposed", dot: "bg-ink-subtle" },
+  { status: "approved", dot: "bg-watch" },
+  { status: "dispatched", dot: "bg-brand" },
+  { status: "received", dot: "bg-ok" },
+];
+
+type Mutate = ReturnType<typeof useMutate>;
 
 function useMutate() {
   const { setView } = useDistrict();
@@ -45,126 +53,118 @@ function useMutate() {
   return { pending, error, run };
 }
 
-function days(n: number | null): string {
-  if (n === null) return "?";
-  if (!Number.isFinite(n)) return "∞";
-  return String(Math.round(n));
+const days = (n: number | null) => (n === null ? "?" : !Number.isFinite(n) ? "∞" : String(Math.round(n)));
+
+/** Before/after days-of-stock bar, with the restock lead time marked. */
+function CoverBar({ before, after, lead, tone }: { before: number | null; after: number | null; lead?: number; tone: "receiver" | "donor" }) {
+  const max = Math.max(before ?? 0, after ?? 0, (lead ?? 0) * 2, 1);
+  const pct = (v: number | null) => `${Math.min(100, ((v ?? 0) / max) * 100)}%`;
+  return (
+    <div className="relative h-2 w-full rounded-full bg-surface-2">
+      <span className={cn("absolute inset-y-0 left-0 rounded-full", tone === "receiver" ? "bg-ok/35" : "bg-ink/15")} style={{ width: pct(tone === "receiver" ? after : before) }} />
+      <span className={cn("absolute inset-y-0 left-0 rounded-full", tone === "receiver" ? "bg-alert" : "bg-ok")} style={{ width: pct(tone === "receiver" ? before : after) }} />
+      {lead !== undefined && <span aria-hidden className="absolute -top-1 h-4 w-0.5 rounded bg-ink/60" style={{ left: pct(lead) }} />}
+    </div>
+  );
 }
 
-function SuggestionCard({ s, view, mutate }: { s: TransferSuggestion; view: DistrictView; mutate: ReturnType<typeof useMutate> }) {
+function SuggestionRow({ s, view, mutate }: { s: TransferSuggestion; view: DistrictView; mutate: Mutate }) {
   const { t, number } = useI18n();
   const { ask } = useAssistant();
+  const [open, setOpen] = useState(false);
   const name = (id: string) => view.facilities.find((f) => f.facility.id === id)?.facility.name ?? id;
   const from = name(s.fromFacilityId);
   const to = name(s.toFacilityId);
 
   return (
-    <li className="card flex flex-col gap-5 p-6">
-      <div>
-        <p className="eyebrow text-ink-subtle">{t("transfers.route", { from, to, km: s.distanceKm })}</p>
-        <h3 className="mt-2 font-display text-xl font-semibold tracking-tight">
-          {t("transfers.move", { qty: number(s.quantity), unit: s.unit, medicine: s.medicineName })}
-        </h3>
-      </div>
-
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl bg-surface-2 p-4">
+    <li className="py-4">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-center">
+        <div className="min-w-0">
+          <p className="font-medium">{s.medicineName}</p>
+          <p className="tabular text-sm text-ink-muted">
+            {number(s.quantity)} {s.unit}, {t("transfers.route", { from, to, km: s.distanceKm })}
+          </p>
+        </div>
         <div>
-          <p className="truncate text-sm font-medium">{from}</p>
-          <p className="tabular text-xs text-ink-muted">
-            {days(s.donor.daysLeftBefore)} <ArrowRight aria-hidden className="inline size-3" /> {days(s.donor.daysLeftAfter)}
+          <p className="mb-1.5 flex justify-between text-xs">
+            <span className="text-ink-muted">
+              {t("transfers.receiver")}: <span className="font-medium text-ink">{to}</span>
+            </span>
+            <span className="tabular">
+              <span className="text-alert-ink">{t("transfers.daysShort", { n: days(s.receiver.daysLeftBefore) })}</span> →{" "}
+              <span className="font-medium text-ok-ink">{t("transfers.daysShort", { n: days(s.receiver.daysLeftAfter) })}</span>
+            </span>
           </p>
+          <CoverBar before={s.receiver.daysLeftBefore} after={s.receiver.daysLeftAfter} lead={s.receiver.leadTimeDays} tone="receiver" />
         </div>
-        <Truck aria-hidden className="size-5 text-brand" />
-        <div className="text-right">
-          <p className="truncate text-sm font-medium">{to}</p>
-          <p className="tabular text-xs">
-            <span className="text-alert-ink">{days(s.receiver.daysLeftBefore)}</span> <ArrowRight aria-hidden className="inline size-3" />{" "}
-            <span className="font-medium text-ok-ink">{days(s.receiver.daysLeftAfter)}</span>
+        <div>
+          <p className="mb-1.5 flex justify-between text-xs">
+            <span className="text-ink-muted">
+              {t("transfers.donor")}: <span className="font-medium text-ink">{from}</span>
+            </span>
+            <span className="tabular text-ink-muted">
+              {t("transfers.daysShort", { n: days(s.donor.daysLeftBefore) })} → {t("transfers.daysShort", { n: days(s.donor.daysLeftAfter) })}
+            </span>
           </p>
+          <CoverBar before={s.donor.daysLeftBefore} after={s.donor.daysLeftAfter} tone="donor" />
+        </div>
+        <div className="flex flex-wrap gap-2 lg:justify-end">
+          <button
+            type="button"
+            disabled={mutate.pending !== null}
+            onClick={() => void mutate.run(s.id, "/api/transfers", { fromFacilityId: s.fromFacilityId, toFacilityId: s.toFacilityId, medicineId: s.medicineId, quantity: s.quantity })}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-forest px-4 text-sm font-medium text-white transition-colors hover:bg-forest-2 disabled:opacity-60"
+          >
+            {mutate.pending === s.id && <Loader2 aria-hidden className="size-4 animate-spin" />}
+            {t("transfers.propose")}
+          </button>
+          <button
+            type="button"
+            aria-label={t("transfers.ask")}
+            onClick={() => ask(t("assistant.why", { qty: number(s.quantity), medicine: s.medicineName, from, to }))}
+            className="grid size-9 place-items-center rounded-full border border-line text-ink-muted hover:border-brand hover:text-brand"
+          >
+            <Sparkles aria-hidden className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-label={t("transfers.why")}
+            onClick={() => setOpen(!open)}
+            className="grid size-9 place-items-center rounded-full border border-line text-ink-muted hover:text-ink"
+          >
+            <ChevronDown aria-hidden className={cn("size-4 transition-transform", open && "rotate-180")} />
+          </button>
         </div>
       </div>
-
-      <details className="group text-sm">
-        <summary className="cursor-pointer list-none font-medium text-brand marker:hidden">{t("transfers.why")} →</summary>
-        <ul className="mt-3 space-y-2 text-ink-muted">
-          <li>
-            {t("transfers.receiverWhy", {
-              to,
-              before: days(s.receiver.daysLeftBefore),
-              lead: s.receiver.leadTimeDays,
-              after: days(s.receiver.daysLeftAfter),
-            })}
-          </li>
+      {open && (
+        <ul className="mt-3 space-y-1.5 rounded-2xl bg-surface-2 p-4 text-sm text-ink-muted">
+          <li>{t("transfers.receiverWhy", { to, before: days(s.receiver.daysLeftBefore), lead: s.receiver.leadTimeDays, after: days(s.receiver.daysLeftAfter) })}</li>
           <li>{t("transfers.donorWhy", { from, before: days(s.donor.daysLeftBefore), after: days(s.donor.daysLeftAfter) })}</li>
           {!s.coversFully && <li>{t("transfers.partial")}</li>}
           {s.alternatives > 0 && <li>{t("transfers.alternatives", { n: s.alternatives })}</li>}
         </ul>
-      </details>
-
-      <div className="mt-auto flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={mutate.pending !== null}
-          onClick={() =>
-            void mutate.run(s.id, "/api/transfers", { fromFacilityId: s.fromFacilityId, toFacilityId: s.toFacilityId, medicineId: s.medicineId, quantity: s.quantity })
-          }
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-forest px-4 text-sm font-medium text-white transition-colors hover:bg-forest-2 disabled:opacity-60"
-        >
-          {mutate.pending === s.id && <Loader2 aria-hidden className="size-4 animate-spin" />}
-          {t("transfers.propose")}
-        </button>
-        <button
-          type="button"
-          onClick={() => ask(t("assistant.why", { qty: number(s.quantity), medicine: s.medicineName, from, to }))}
-          className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line px-4 text-sm font-medium text-ink-muted hover:border-brand hover:text-brand"
-        >
-          <Sparkles aria-hidden className="size-4" /> {t("transfers.ask")}
-        </button>
-      </div>
+      )}
     </li>
   );
 }
 
-function TransferRow({ tr, view, mutate }: { tr: Transfer; view: DistrictView; mutate: ReturnType<typeof useMutate> }) {
+function PipelineCard({ tr, view, mutate }: { tr: Transfer; view: DistrictView; mutate: Mutate }) {
   const { t, number } = useI18n();
   const name = (id: string) => view.facilities.find((f) => f.facility.id === id)?.facility.name ?? id;
   const medicine = view.facilities.flatMap((f) => f.facility.medicines).find((m) => m.id === tr.medicineId);
-  const stepIndex = STEPS.indexOf(tr.status);
 
   return (
-    <li className="card p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-medium">
-            {number(tr.quantity)} {medicine?.unit} {medicine?.name}
-          </p>
-          <p className="text-sm text-ink-muted">
-            {name(tr.fromFacilityId)} <ArrowRight aria-hidden className="inline size-3.5" /> {name(tr.toFacilityId)}
-          </p>
-        </div>
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-medium",
-            tr.status === "received" ? "bg-ok-soft text-ok-ink" : tr.status === "cancelled" ? "bg-surface-2 text-ink-subtle" : "bg-watch-soft text-watch-ink",
-          )}
-        >
-          {t(`transfer.status.${tr.status}`)}
-        </span>
-      </div>
-
-      {tr.status !== "cancelled" && (
-        <ol aria-label={t(`transfer.status.${tr.status}`)} className="mt-4 grid grid-cols-4 gap-1.5">
-          {STEPS.map((step, i) => (
-            <li key={step} className="flex flex-col gap-1.5">
-              <span aria-hidden className={cn("h-1.5 rounded-full", i <= stepIndex ? "bg-brand" : "bg-line")} />
-              <span className={cn("text-[11px]", i <= stepIndex ? "text-ink" : "text-ink-subtle")}>{t(`transfer.status.${step}`)}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-
+    <li className="rounded-2xl border border-line bg-surface p-4 shadow-(--shadow-card)">
+      <p className="text-sm font-medium">{medicine?.name}</p>
+      <p className="tabular text-xs text-ink-muted">
+        {number(tr.quantity)} {medicine?.unit}
+      </p>
+      <p className="mt-2 flex flex-wrap items-center gap-1 text-xs text-ink-muted">
+        {name(tr.fromFacilityId)} <ArrowRight aria-hidden className="size-3" /> {name(tr.toFacilityId)}
+      </p>
       {NEXT_ACTIONS[tr.status].length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {NEXT_ACTIONS[tr.status].map((action) => (
             <button
               key={action}
@@ -172,11 +172,11 @@ function TransferRow({ tr, view, mutate }: { tr: Transfer; view: DistrictView; m
               disabled={mutate.pending !== null}
               onClick={() => void mutate.run(`${tr.id}:${action}`, `/api/transfers/${tr.id}`, { action })}
               className={cn(
-                "inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors disabled:opacity-60",
+                "inline-flex h-8 items-center gap-1 rounded-full px-3 text-xs font-medium transition-colors disabled:opacity-60",
                 action === "cancel" ? "border border-line text-ink-muted hover:border-alert hover:text-alert-ink" : "bg-ink text-white hover:bg-forest",
               )}
             >
-              {mutate.pending === `${tr.id}:${action}` ? <Loader2 aria-hidden className="size-4 animate-spin" /> : action === "receive" ? <Check aria-hidden className="size-4" /> : null}
+              {mutate.pending === `${tr.id}:${action}` ? <Loader2 aria-hidden className="size-3.5 animate-spin" /> : action === "receive" ? <Check aria-hidden className="size-3.5" /> : null}
               {t(`transfer.action.${action}`)}
             </button>
           ))}
@@ -187,23 +187,40 @@ function TransferRow({ tr, view, mutate }: { tr: Transfer; view: DistrictView; m
 }
 
 export function TransfersView() {
-  const { t } = useI18n();
+  const { t, number } = useI18n();
   const mutate = useMutate();
 
   return (
     <DistrictGate>
       {(view) => {
-        const active = view.transfers.filter((x) => x.status === "proposed" || x.status === "approved" || x.status === "dispatched");
-        const done = view.transfers.filter((x) => x.status === "received" || x.status === "cancelled").slice(0, 6);
+        const units = view.suggestions.reduce((s, x) => s + x.quantity, 0);
+        const helped = new Set(view.suggestions.map((s) => s.toFacilityId)).size;
+        const moving = view.transfers.filter((x) => x.status === "approved" || x.status === "dispatched").length;
+        const kpis: { icon: LucideIcon; label: string; value: number }[] = [
+          { icon: Waypoints, label: t("kpi.suggested"), value: view.suggestions.length },
+          { icon: Package, label: t("transfers.kpiUnits"), value: units },
+          { icon: ArrowRight, label: t("transfers.kpiCentres"), value: helped },
+          { icon: Truck, label: t("kpi.inProgress"), value: moving },
+        ];
+
         return (
-          <div className="space-y-10">
-            <header className="grid gap-6 rounded-[var(--radius-hero)] bg-forest p-8 text-white sm:p-10 lg:grid-cols-[1.3fr_1fr]">
+          <div className="space-y-6">
+            <header className="grid gap-6 rounded-[26px] bg-forest p-7 text-white sm:p-9 lg:grid-cols-[1.4fr_1fr]">
               <div>
                 <p className="eyebrow text-mint/80">{view.district.name}</p>
                 <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{t("transfers.title")}</h1>
-                <p className="mt-4 max-w-xl text-base text-white/70">{t("transfers.subtitle")}</p>
+                <p className="mt-3 max-w-xl text-base text-white/70">{t("transfers.subtitle")}</p>
               </div>
-              <p className="self-end rounded-2xl border border-white/10 p-5 text-sm leading-relaxed text-white/70">{t("transfers.note")}</p>
+              <dl className="grid grid-cols-2 gap-3 self-end">
+                {kpis.map((k) => (
+                  <div key={k.label} className="flex flex-col-reverse rounded-2xl bg-white/[0.06] p-4">
+                    <dt className="mt-1 flex items-center gap-1.5 text-xs text-white/60">
+                      <k.icon aria-hidden className="size-3.5" /> {k.label}
+                    </dt>
+                    <dd className="tabular font-display text-3xl font-semibold">{number(k.value)}</dd>
+                  </div>
+                ))}
+              </dl>
             </header>
 
             {mutate.error && (
@@ -212,48 +229,46 @@ export function TransfersView() {
               </p>
             )}
 
-            <section aria-labelledby="active-heading">
-              <h2 id="active-heading" className="mb-4 font-display text-xl font-semibold tracking-tight">
-                {t("transfers.active")}
-              </h2>
-              {active.length === 0 ? (
-                <p className="card p-6 text-sm text-ink-muted">{t("transfers.activeEmpty")}</p>
-              ) : (
-                <ul className="grid gap-3 lg:grid-cols-2">
-                  {active.map((tr) => (
-                    <TransferRow key={tr.id} tr={tr} view={view} mutate={mutate} />
-                  ))}
-                </ul>
-              )}
-            </section>
+            <Tile icon={Truck} label={t("transfers.pipeline")}>
+              <p className="-mt-2 mb-4 text-sm text-ink-muted">{t("transfers.note")}</p>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {COLUMNS.map((col) => {
+                  const items = view.transfers.filter((x) => x.status === col.status);
+                  return (
+                    <section key={col.status} aria-label={t(`transfer.status.${col.status}`)} className="rounded-[20px] bg-surface-2 p-3">
+                      <h3 className="mb-3 flex items-center justify-between px-1 text-sm font-medium">
+                        <span className="flex items-center gap-2">
+                          <span aria-hidden className={cn("size-2 rounded-full", col.dot)} />
+                          {t(`transfer.status.${col.status}`)}
+                        </span>
+                        <span className="tabular text-xs text-ink-subtle">{items.length}</span>
+                      </h3>
+                      {items.length === 0 ? (
+                        <p className="rounded-2xl border border-dashed border-line-strong px-3 py-6 text-center text-xs text-ink-subtle">{t("transfers.pipelineEmpty")}</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {items.map((tr) => (
+                            <PipelineCard key={tr.id} tr={tr} view={view} mutate={mutate} />
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            </Tile>
 
-            <section aria-labelledby="suggestions-heading">
-              <h2 id="suggestions-heading" className="mb-4 font-display text-xl font-semibold tracking-tight">
-                {t("transfers.suggestions")}
-              </h2>
+            <Tile icon={Waypoints} label={t("transfers.suggestions")} aside={<span className="tabular text-xs text-ink-subtle">{view.suggestions.length}</span>}>
               {view.suggestions.length === 0 ? (
-                <p className="card p-6 text-sm text-ink-muted">{t("transfers.none")}</p>
+                <p className="py-10 text-center text-sm text-ink-muted">{t("transfers.none")}</p>
               ) : (
-                <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <ul className="-my-4 divide-y divide-line">
                   {view.suggestions.map((s) => (
-                    <SuggestionCard key={s.id} s={s} view={view} mutate={mutate} />
+                    <SuggestionRow key={s.id} s={s} view={view} mutate={mutate} />
                   ))}
                 </ul>
               )}
-            </section>
-
-            {done.length > 0 && (
-              <section aria-labelledby="done-heading">
-                <h2 id="done-heading" className="mb-4 font-display text-xl font-semibold tracking-tight">
-                  {t("transfers.done")}
-                </h2>
-                <ul className="grid gap-3 lg:grid-cols-2">
-                  {done.map((tr) => (
-                    <TransferRow key={tr.id} tr={tr} view={view} mutate={mutate} />
-                  ))}
-                </ul>
-              </section>
-            )}
+            </Tile>
           </div>
         );
       }}

@@ -44,7 +44,12 @@
 }
 
 body {
-  background: var(--color-paper);
+  background:
+    radial-gradient(1100px 520px at 0% -8%, rgb(159 232 194 / 0.42), transparent 62%),
+    radial-gradient(900px 480px at 100% 0%, rgb(240 173 50 / 0.13), transparent 60%),
+    radial-gradient(1200px 700px at 50% 110%, rgb(15 122 95 / 0.1), transparent 60%),
+    #eaf0e8;
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -73,9 +78,41 @@ body {
 
 @utility card {
   background: var(--color-surface);
+  color: var(--color-ink);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+}
+
+@keyframes nabz-beat {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  12% {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+  24% {
+    transform: scale(1.01);
+    opacity: 0.65;
+  }
+  36% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+@keyframes nabz-beat-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  12%,
+  36% {
+    opacity: 1;
+  }
 }
 
 @utility tabular {

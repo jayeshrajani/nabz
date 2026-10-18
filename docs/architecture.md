@@ -74,3 +74,9 @@ Thresholds live in `THRESHOLDS` in `src/domain/risk.ts`.
 ## 3D network
 
 `NetworkStage` detects WebGL via `useSyncExternalStore`, lazy-loads the R3F scene with `next/dynamic({ ssr:false })`, and falls back to an accessible 2D button map. Reduced motion switches the canvas to `frameloop="demand"` and disables easing/pulses. Node colour, shape and label all encode status (shape = type; label text = status) so severity is not colour-only.
+
+The dark map uses an instanced dotted ground. On desktop, the attention/facility panel overlays the map; below 1024px it is mounted below it instead, avoiding duplicate panel IDs. White cards explicitly set their foreground colour so they remain readable inside the dark map.
+
+## Operational insights
+
+`src/domain/insights.ts` derives the stock-out watch, district medicine-consumption trends, trailing averages, week-over-week changes and centre-table rows from the shared district view. These are pure calculations, not AI output. The Overview presents countdowns and restock lead-time markers alongside history; Centres provides a sortable operational table; Transfers shows workflow stages and before/after coverage. Restock markers represent lead times, not confirmed purchase orders.
