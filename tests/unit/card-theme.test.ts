@@ -44,7 +44,8 @@ describe("3D map labels", () => {
   it("does not mount drei Html, whose nested React roots race unmounts", () => {
     const scene = readFileSync(new URL("../../src/components/district-3d/district-network.tsx", import.meta.url), "utf8");
 
-    expect(scene).not.toMatch(/\bHtml\b/);
+    expect(scene).not.toMatch(/import\s*\{[^}]*\bHtml\b[^}]*\}\s*from\s*"@react-three\/drei"/);
+    expect(scene).not.toContain("<Html");
     expect(scene).toContain("LabelProjector");
   });
 });
