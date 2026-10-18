@@ -1,68 +1,60 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
-import { SEVERITY_META, StatusBadge } from "@/components/ui/status-badge";
+import { motion } from "motion/react";
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { AssessedFacility } from "@/domain/district";
-import type { RiskSignal } from "@/domain/risk";
 
-interface Alert {
-  facilityId: string;
-  facilityName: string;
-  signal: RiskSignal;
-}
-
-const LIMIT = 8;
+const RANK = { critical: 0, warning: 1, healthy: 2 } as const;
 
 export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFacility[]; onSelect: (id: string) => void }) {
-  const alerts: Alert[] = facilities
-    .flatMap(({ facility, assessment }) =>
-      assessment.signals.map((signal) => ({ facilityId: facility.id, facilityName: facility.name, signal })),
-    )
-    .sort((a, b) => (a.signal.severity === b.signal.severity ? 0 : a.signal.severity === "critical" ? -1 : 1));
+  const flagged = facilities
+    .filter((f) => f.assessment.status !== "healthy")
+    .sort((a, b) => RANK[a.assessment.status] - RANK[b.assessment.status] || b.assessment.signals.length - a.assessment.signals.length);
 
   return (
-    <section aria-labelledby="alerts-heading" className="panel flex h-full flex-col p-4">
-      <header className="mb-3 flex items-baseline justify-between">
-        <h2 id="alerts-heading" className="text-sm font-medium">
-          Priority alerts
-        </h2>
-        <span className="text-xs text-fg-subtle tabular">{alerts.length} total</span>
-      </header>
-      {alerts.length === 0 ? (
-        <p className="m-auto text-sm text-fg-muted">No active risks across the district.</p>
+    <motion.section
+      aria-labelledby="attention-heading"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="card flex h-full flex-col p-5"
+    >
+      <h2 id="attention-heading" className="text-base font-semibold">
+        Needs attention
+      </h2>
+      <p className="mt-0.5 text-sm text-ink-muted">Select a centre to see what is happening.</p>
+
+      {flagged.length === 0 ? (
+        <p className="m-auto text-sm text-ink-muted">Every centre is stable right now.</p>
       ) : (
-        <ol className="-mx-2 flex flex-col gap-0.5 overflow-y-auto">
-          <AnimatePresence initial={false}>
-            {alerts.slice(0, LIMIT).map((a, i) => (
-              <motion.li
-                key={`${a.facilityId}-${a.signal.domain}-${a.signal.ref ?? i}`}
-                layout
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
+        <ol className="-mx-2 mt-4 flex flex-col overflow-y-auto">
+          {flagged.map(({ facility, assessment }) => {
+            const [top, ...rest] = assessment.signals;
+            return (
+              <li key={facility.id}>
                 <button
                   type="button"
-                  onClick={() => onSelect(a.facilityId)}
-                  className="group flex w-full items-start gap-3 rounded-lg px-2 py-2 text-left hover:bg-ink-800"
+                  onClick={() => onSelect(facility.id)}
+                  className="group flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-surface-2"
                 >
-                  <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full" style={{ background: SEVERITY_META[a.signal.severity].hex }} />
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2">
-                      <span className="truncate text-sm text-fg">{a.facilityName}</span>
-                      <StatusBadge severity={a.signal.severity} className="shrink-0" />
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium text-ink">{facility.name}</span>
+                      <StatusBadge severity={assessment.status} className="shrink-0" />
                     </span>
-                    <span className="mt-0.5 block text-xs text-fg-muted">{a.signal.message}</span>
+                    <span className="mt-1 block truncate text-sm text-ink-muted">
+                      {top?.message}
+                      {rest.length > 0 && <span className="text-ink-subtle"> and {rest.length} more</span>}
+                    </span>
                   </span>
-                  <ChevronRight aria-hidden className="mt-1 size-4 shrink-0 text-fg-subtle group-hover:text-fg" />
+                  <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" />
                 </button>
-              </motion.li>
-            ))}
-          </AnimatePresence>
+              </li>
+            );
+          })}
         </ol>
       )}
-      {alerts.length > LIMIT && <p className="mt-2 text-xs text-fg-subtle">+{alerts.length - LIMIT} more in facility details</p>}
-    </section>
+    </motion.section>
   );
 }

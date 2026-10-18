@@ -1,4 +1,4 @@
-# PROJECT_NAME — Implementation Plan
+# nabz — Implementation Plan
 
 District healthcare operations platform for PHCs and CHCs: stock, footfall, beds, staffing, diagnostics, cross-facility redistribution, explainable AI and a bilingual copilot.
 
@@ -16,8 +16,8 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 **Scope:** skeleton, design system, 3D district network, Firebase-backed isolated demo sessions, security/observability foundations, Docker + CI.
 
 - [x] Next.js 16 App Router, React 19, TypeScript strict, Tailwind v4
-- [x] Design tokens (`src/app/globals.css`), centralised branding (`src/config/brand.ts`)
-- [x] Responsive shell + Command Centre (KPI strip, alerts, facility panel, searchable/filterable directory)
+- [x] Light clinical design system (`src/app/globals.css`), centralised branding (`src/config/brand.ts`)
+- [x] Single-page Command Centre: plain-language summary, 4 key numbers, map, needs-attention list, facility panel, centre list
 - [x] React Three Fiber district network: 12 facilities, status-coded nodes, footfall-height pillars, critical pulse, hover/select, camera focus, related-link highlighting
 - [x] 2D accessible fallback (auto when WebGL missing, manual toggle), reduced-motion support, lazy-loaded 3D
 - [x] Zod schemas for district/facility/medicine/diagnostics with invariants (occupied ≤ total, present ≤ scheduled)

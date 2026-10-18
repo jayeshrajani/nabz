@@ -4,11 +4,14 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { AssessedFacility } from "@/domain/district";
-import type { Severity } from "@/domain/risk";
-import type { FacilityType } from "@/domain/schemas";
 import { cn } from "@/lib/utils";
 
-const selectClass = "h-9 rounded-lg border border-line bg-ink-850 px-2.5 text-sm text-fg";
+type Filter = "all" | "attention" | "stable";
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "attention", label: "Needs attention" },
+  { id: "stable", label: "Stable" },
+];
 
 export function FacilityDirectory({
   facilities,
@@ -20,62 +23,57 @@ export function FacilityDirectory({
   onSelect: (id: string | null) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<Severity | "all">("all");
-  const [type, setType] = useState<FacilityType | "all">("all");
+  const [filter, setFilter] = useState<Filter>("all");
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return facilities.filter(
-      ({ facility, assessment }) =>
-        (status === "all" || assessment.status === status) &&
-        (type === "all" || facility.type === type) &&
-        (!q || facility.name.toLowerCase().includes(q) || facility.block.toLowerCase().includes(q)),
-    );
-  }, [facilities, query, status, type]);
+    return facilities.filter(({ facility, assessment }) => {
+      const stable = assessment.status === "healthy";
+      if (filter === "attention" && stable) return false;
+      if (filter === "stable" && !stable) return false;
+      return !q || facility.name.toLowerCase().includes(q) || facility.block.toLowerCase().includes(q);
+    });
+  }, [facilities, query, filter]);
 
   return (
-    <section aria-labelledby="directory-heading" className="panel p-4">
-      <header className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 id="directory-heading" className="text-sm font-medium">
-          Facility directory <span className="text-fg-subtle tabular">({rows.length})</span>
+    <section aria-labelledby="directory-heading">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 id="directory-heading" className="text-base font-semibold">
+          All centres
         </h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Filter centres" className="flex rounded-full border border-line bg-surface p-0.5 text-sm">
+            {FILTERS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                aria-pressed={filter === f.id}
+                onClick={() => setFilter(f.id)}
+                className={cn("rounded-full px-3 py-1", filter === f.id ? "bg-ink text-white" : "text-ink-muted hover:text-ink")}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
           <label className="relative">
-            <span className="sr-only">Search facilities</span>
-            <Search aria-hidden className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-fg-subtle" />
+            <span className="sr-only">Search centres</span>
+            <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-subtle" />
             <input
               type="search"
               value={query}
               maxLength={60}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name or block"
-              className={cn(selectClass, "w-52 pl-8 placeholder:text-fg-subtle")}
+              placeholder="Search"
+              className="h-9 w-44 rounded-full border border-line bg-surface pr-3 pl-9 text-sm placeholder:text-ink-subtle"
             />
           </label>
-          <label>
-            <span className="sr-only">Filter by status</span>
-            <select value={status} onChange={(e) => setStatus(e.target.value as Severity | "all")} className={selectClass}>
-              <option value="all">All statuses</option>
-              <option value="critical">Critical</option>
-              <option value="warning">Watch</option>
-              <option value="healthy">Stable</option>
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Filter by type</span>
-            <select value={type} onChange={(e) => setType(e.target.value as FacilityType | "all")} className={selectClass}>
-              <option value="all">PHC + CHC</option>
-              <option value="PHC">PHC</option>
-              <option value="CHC">CHC</option>
-            </select>
-          </label>
         </div>
-      </header>
+      </div>
 
       {rows.length === 0 ? (
-        <p className="py-8 text-center text-sm text-fg-muted">No facilities match these filters.</p>
+        <p className="card py-10 text-center text-sm text-ink-muted">No centres match.</p>
       ) : (
-        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map(({ facility, assessment }) => {
             const selected = facility.id === selectedId;
             return (
@@ -85,22 +83,15 @@ export function FacilityDirectory({
                   aria-pressed={selected}
                   onClick={() => onSelect(selected ? null : facility.id)}
                   className={cn(
-                    "flex w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors duration-(--duration-fast)",
-                    selected ? "border-signal-cyan/60 bg-signal-cyan/5" : "border-line bg-ink-850 hover:border-line-strong",
+                    "card flex w-full flex-col gap-1 p-4 text-left transition-colors duration-(--duration-fast)",
+                    selected ? "border-brand ring-2 ring-brand/15" : "hover:border-line-strong",
                   )}
                 >
                   <span className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">{facility.name}</span>
+                    <span className="truncate font-medium">{facility.name}</span>
                     <StatusBadge severity={assessment.status} />
                   </span>
-                  <span className="tabular flex gap-3 text-[11px] text-fg-muted">
-                    <span>{facility.type}</span>
-                    <span>{facility.block}</span>
-                    <span>
-                      Beds {facility.beds.occupied}/{facility.beds.total}
-                    </span>
-                    <span>{assessment.signals.length} signals</span>
-                  </span>
+                  <span className="truncate text-sm text-ink-muted">{assessment.signals[0]?.message ?? "Running normally"}</span>
                 </button>
               </li>
             );

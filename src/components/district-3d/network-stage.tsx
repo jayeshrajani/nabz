@@ -1,15 +1,15 @@
 "use client";
 
-import { Box, LayoutGrid } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState, useSyncExternalStore } from "react";
-import { Button } from "@/components/ui/button";
+import { SEVERITY_META } from "@/components/ui/status-badge";
+import { cn } from "@/lib/utils";
 import { DistrictNetwork2D } from "./district-network-2d";
 import type { NetworkProps } from "./district-network";
 
 const DistrictNetwork3D = dynamic(() => import("./district-network").then((m) => m.DistrictNetwork), {
   ssr: false,
-  loading: () => <StageMessage>Initialising spatial view…</StageMessage>,
+  loading: () => <StageMessage>Loading map</StageMessage>,
 });
 
 let webglSupport: boolean | undefined;
@@ -24,8 +24,8 @@ const noopSubscribe = () => () => {};
 
 function StageMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid size-full place-items-center">
-      <p className="animate-pulse text-xs tracking-wide text-fg-subtle uppercase">{children}</p>
+    <div className="grid size-full place-items-center bg-[#eef3f1]">
+      <p className="animate-pulse text-sm text-ink-subtle">{children}</p>
     </div>
   );
 }
@@ -36,10 +36,10 @@ export function NetworkStage(props: NetworkProps) {
   const mode = webgl === false ? "2d" : preferred;
 
   return (
-    <section aria-label="District healthcare network" className="panel relative h-[380px] overflow-hidden sm:h-[460px] xl:h-[540px]">
+    <section aria-label="District map" className="card relative h-[360px] overflow-hidden sm:h-[460px] lg:h-[560px]">
       <div className="absolute inset-0">
         {webgl === null ? (
-          <StageMessage>Preparing network…</StageMessage>
+          <StageMessage>Loading map</StageMessage>
         ) : mode === "3d" ? (
           <div className="size-full" aria-hidden>
             <DistrictNetwork3D {...props} />
@@ -49,27 +49,32 @@ export function NetworkStage(props: NetworkProps) {
         )}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
-        <div>
-          <h2 className="text-sm font-medium">District network</h2>
-          <p className="text-xs text-fg-subtle">
-            {mode === "3d" ? "Drag to orbit · pillar height = today's footfall" : "2D view"} · ◆ CHC ● PHC
-          </p>
+      {webgl && (
+        <div role="group" aria-label="Map style" className="absolute top-4 right-4 flex rounded-full border border-line bg-surface/90 p-0.5 text-xs backdrop-blur">
+          {(["3d", "2d"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={mode === m}
+              onClick={() => setPreferred(m)}
+              className={cn("rounded-full px-3 py-1 font-medium uppercase", mode === m ? "bg-ink text-white" : "text-ink-muted hover:text-ink")}
+            >
+              {m}
+            </button>
+          ))}
         </div>
-        {webgl && (
-          <div role="group" aria-label="Network view" className="pointer-events-auto flex rounded-lg border border-line bg-ink-900/80 p-0.5">
-            <Button size="sm" variant={mode === "3d" ? "primary" : "ghost"} aria-pressed={mode === "3d"} onClick={() => setPreferred("3d")}>
-              <Box aria-hidden className="size-3.5" /> 3D
-            </Button>
-            <Button size="sm" variant={mode === "2d" ? "primary" : "ghost"} aria-pressed={mode === "2d"} onClick={() => setPreferred("2d")}>
-              <LayoutGrid aria-hidden className="size-3.5" /> 2D
-            </Button>
-          </div>
-        )}
-      </div>
-      {webgl === false && (
-        <p className="absolute right-4 bottom-3 text-[11px] text-fg-subtle">WebGL unavailable — showing 2D view.</p>
       )}
+
+      <ul aria-label="Legend" className="pointer-events-none absolute bottom-4 left-4 flex flex-wrap gap-x-4 gap-y-1 rounded-full bg-surface/90 px-4 py-2 text-xs text-ink-muted backdrop-blur">
+        {(["healthy", "warning", "critical"] as const).map((s) => (
+          <li key={s} className="flex items-center gap-1.5">
+            <span aria-hidden className="size-2.5 rounded-full" style={{ background: SEVERITY_META[s].hex }} />
+            {SEVERITY_META[s].label}
+          </li>
+        ))}
+        <li className="hidden text-ink-subtle sm:block">Cubes are CHCs, spheres are PHCs</li>
+      </ul>
+      {webgl === false && <p className="absolute top-4 right-4 text-xs text-ink-subtle">Showing flat map</p>}
     </section>
   );
 }

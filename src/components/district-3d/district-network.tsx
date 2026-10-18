@@ -1,6 +1,6 @@
 "use client";
 
-import { Html, Line, OrbitControls, useCursor } from "@react-three/drei";
+import { ContactShadows, Html, Line, OrbitControls, RoundedBox, useCursor } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -14,10 +14,11 @@ export interface NetworkProps {
   animate: boolean;
 }
 
-const OVERVIEW_CAMERA = new THREE.Vector3(0, 30, 38);
+const BACKGROUND = "#eef3f1";
+const OVERVIEW_CAMERA = new THREE.Vector3(0, 24, 34);
 
-function pillarHeight(item: AssessedFacility): number {
-  return 0.8 + Math.min(4, (item.assessment.footfallToday ?? 0) / 60);
+function stemHeight(item: AssessedFacility): number {
+  return 0.6 + Math.min(3, (item.assessment.footfallToday ?? 0) / 80);
 }
 
 function FacilityNode({
@@ -42,73 +43,68 @@ function FacilityNode({
   const { facility, assessment } = item;
   const color = SEVERITY_META[assessment.status].hex;
   const isChc = facility.type === "CHC";
-  const radius = isChc ? 0.75 : 0.45;
-  const height = pillarHeight(item);
-  const scaleGoal = selected ? 1.35 : hovered ? 1.15 : 1;
+  const size = isChc ? 1.3 : 0.62;
+  const height = stemHeight(item);
+  const scaleGoal = selected ? 1.25 : hovered ? 1.12 : 1;
+  const opacity = dimmed ? 0.3 : 1;
 
   useFrame((state, delta) => {
     if (head.current) {
       const k = animate ? 1 - Math.exp(-delta * 10) : 1;
-      const s = THREE.MathUtils.lerp(head.current.scale.x, scaleGoal, k);
-      head.current.scale.setScalar(s);
-      if (animate) head.current.position.y = height + Math.sin(state.clock.elapsedTime * 1.2 + facility.position.x) * 0.08;
+      head.current.scale.setScalar(THREE.MathUtils.lerp(head.current.scale.x, scaleGoal, k));
     }
-    if (pulse.current && pulseMaterial.current && animate && assessment.status === "critical") {
-      const t = (state.clock.elapsedTime % 1.8) / 1.8;
-      pulse.current.scale.setScalar(1 + t * 2.2);
-      pulseMaterial.current.opacity = 0.45 * (1 - t);
+    if (pulse.current && pulseMaterial.current && animate) {
+      const t = (state.clock.elapsedTime % 2.4) / 2.4;
+      pulse.current.scale.setScalar(1 + t * 1.8);
+      pulseMaterial.current.opacity = 0.35 * (1 - t);
     }
   });
 
-  const opacity = dimmed ? 0.25 : 1;
+  const handlers = {
+    onPointerOver: (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      setHovered(true);
+    },
+    onPointerOut: () => setHovered(false),
+    onClick: (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      onSelect(facility.id);
+    },
+  };
 
   return (
     <group position={[facility.position.x, 0, facility.position.z]}>
-      <mesh rotation-x={-Math.PI / 2} position-y={0.02}>
-        <ringGeometry args={[radius * 1.4, radius * 1.6, 48]} />
-        <meshBasicMaterial color={color} transparent opacity={0.6 * opacity} />
+      <mesh rotation-x={-Math.PI / 2} position-y={0.01}>
+        <circleGeometry args={[size * 1.15, 48]} />
+        <meshBasicMaterial color={color} transparent opacity={0.16 * opacity} />
       </mesh>
       {assessment.status === "critical" && (
-        <mesh ref={pulse} rotation-x={-Math.PI / 2} position-y={0.03}>
-          <ringGeometry args={[radius * 1.5, radius * 1.7, 48]} />
-          <meshBasicMaterial ref={pulseMaterial} color={color} transparent opacity={animate ? 0 : 0.35} />
+        <mesh ref={pulse} rotation-x={-Math.PI / 2} position-y={0.02}>
+          <ringGeometry args={[size * 1.15, size * 1.3, 64]} />
+          <meshBasicMaterial ref={pulseMaterial} color={color} transparent opacity={animate ? 0 : 0.3} />
         </mesh>
       )}
       <mesh position-y={height / 2}>
-        <cylinderGeometry args={[0.03, 0.03, height, 6]} />
-        <meshBasicMaterial color={color} transparent opacity={0.35 * opacity} />
+        <cylinderGeometry args={[0.04, 0.04, height, 8]} />
+        <meshStandardMaterial color="#b9c7c1" transparent opacity={opacity} />
       </mesh>
-      <group ref={head} position-y={height}>
-        <mesh
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            setHovered(true);
-          }}
-          onPointerOut={() => setHovered(false)}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(facility.id);
-          }}
-        >
-          {isChc ? <octahedronGeometry args={[radius, 0]} /> : <sphereGeometry args={[radius, 24, 24]} />}
-          <meshStandardMaterial
-            color={color}
-            emissive={color}
-            emissiveIntensity={selected ? 1.4 : hovered ? 1 : 0.6}
-            roughness={0.35}
-            metalness={0.1}
-            transparent
-            opacity={opacity}
-          />
-        </mesh>
+      <group ref={head} position-y={height + size / 2}>
+        {isChc ? (
+          <RoundedBox args={[size, size, size]} radius={0.22} smoothness={4} castShadow {...handlers}>
+            <meshStandardMaterial color={color} roughness={0.5} transparent opacity={opacity} />
+          </RoundedBox>
+        ) : (
+          <mesh castShadow {...handlers}>
+            <sphereGeometry args={[size, 32, 32]} />
+            <meshStandardMaterial color={color} roughness={0.5} transparent opacity={opacity} />
+          </mesh>
+        )}
       </group>
       {(hovered || selected) && (
-        <Html position={[0, height + radius + 0.8, 0]} center className="pointer-events-none select-none">
-          <div className="rounded-md border border-line-strong bg-ink-900/95 px-2.5 py-1.5 text-center whitespace-nowrap shadow-lg">
-            <p className="text-xs font-medium text-fg">{facility.name}</p>
-            <p className="text-[10px] tracking-wide text-fg-muted uppercase">
-              {facility.type} · {SEVERITY_META[assessment.status].label}
-            </p>
+        <Html position={[0, height + size + 0.9, 0]} center className="pointer-events-none select-none">
+          <div className="rounded-xl border border-line bg-surface px-3 py-2 text-center whitespace-nowrap shadow-[0_8px_24px_-8px_rgb(19_33_28/0.25)]">
+            <p className="text-sm font-medium text-ink">{facility.name}</p>
+            <p className={`text-xs ${SEVERITY_META[assessment.status].ink}`}>{SEVERITY_META[assessment.status].label}</p>
           </div>
         </Html>
       )}
@@ -130,8 +126,8 @@ function Links({ facilities, selectedId }: { facilities: AssessedFacility[]; sel
         out.push({
           key,
           ids: [facility.id, linkId],
-          from: [facility.position.x, 0.05, facility.position.z],
-          to: [other.position.x, 0.05, other.position.z],
+          from: [facility.position.x, 0.03, facility.position.z],
+          to: [other.position.x, 0.03, other.position.z],
         });
       }
     }
@@ -142,19 +138,7 @@ function Links({ facilities, selectedId }: { facilities: AssessedFacility[]; sel
     <>
       {edges.map((e) => {
         const active = selectedId !== null && e.ids.includes(selectedId);
-        return (
-          <Line
-            key={e.key}
-            points={[e.from, e.to]}
-            color={active ? "#4fd7e8" : "#2c3b52"}
-            lineWidth={active ? 2 : 1}
-            transparent
-            opacity={active ? 0.95 : 0.6}
-            dashed={!active}
-            dashSize={0.4}
-            gapSize={0.3}
-          />
-        );
+        return <Line key={e.key} points={[e.from, e.to]} color={active ? "#0e7c66" : "#c5d2cd"} lineWidth={active ? 2.5 : 1.5} />;
       })}
     </>
   );
@@ -176,7 +160,7 @@ function CameraRig({ focus, animate }: { focus: { x: number; z: number } | null;
     if (!controls || settledFor.current === key) return;
     if (focus) {
       lookAt.set(focus.x, 1, focus.z);
-      goal.set(focus.x * 1.15 + 6, 14, focus.z * 1.15 + 16);
+      goal.set(focus.x * 1.1 + 5, 13, focus.z * 1.1 + 15);
     } else {
       lookAt.set(0, 0, 0);
       goal.copy(OVERVIEW_CAMERA);
@@ -201,17 +185,21 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
 
   return (
     <Canvas
-      camera={{ position: OVERVIEW_CAMERA.toArray(), fov: 38, near: 0.5, far: 200 }}
+      camera={{ position: OVERVIEW_CAMERA.toArray(), fov: 36, near: 0.5, far: 200 }}
       dpr={[1, 1.75]}
       frameloop={animate ? "always" : "demand"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => onSelect(null)}
     >
-      <color attach="background" args={["#05080d"]} />
-      <fog attach="fog" args={["#05080d", 40, 95]} />
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[10, 20, 10]} intensity={0.6} />
-      <gridHelper args={[80, 40, "#162131", "#0d1520"]} position-y={-0.01} />
+      <color attach="background" args={[BACKGROUND]} />
+      <fog attach="fog" args={[BACKGROUND, 45, 95]} />
+      <hemisphereLight args={["#ffffff", "#dfe8e4", 1.6]} />
+      <directionalLight position={[8, 20, 6]} intensity={1.4} />
+      <mesh rotation-x={-Math.PI / 2} position-y={-0.01}>
+        <circleGeometry args={[34, 96]} />
+        <meshBasicMaterial color="#f8fbfa" />
+      </mesh>
+      <ContactShadows position={[0, 0, 0]} scale={70} opacity={0.28} blur={2.4} far={8} frames={1} color="#2c4a40" />
       <Links facilities={facilities} selectedId={selectedId} />
       {facilities.map((item) => (
         <FacilityNode
@@ -224,14 +212,7 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate }: N
         />
       ))}
       <CameraRig focus={selected ? selected.facility.position : null} animate={animate} />
-      <OrbitControls
-        makeDefault
-        enablePan={false}
-        minDistance={10}
-        maxDistance={70}
-        maxPolarAngle={Math.PI / 2.3}
-        enableDamping={animate}
-      />
+      <OrbitControls makeDefault enablePan={false} minDistance={10} maxDistance={60} maxPolarAngle={Math.PI / 2.4} enableDamping={animate} />
     </Canvas>
   );
 }

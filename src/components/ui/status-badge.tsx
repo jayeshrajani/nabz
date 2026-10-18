@@ -1,28 +1,21 @@
-import { OctagonAlert, ShieldCheck, TriangleAlert } from "lucide-react";
+import { CircleAlert, CircleCheck, TriangleAlert } from "lucide-react";
 import type { Severity } from "@/domain/risk";
 import { cn } from "@/lib/utils";
 
-export const SEVERITY_META: Record<Severity, { label: string; text: string; bg: string; hex: string }> = {
-  healthy: { label: "Stable", text: "text-signal-teal", bg: "bg-signal-teal/10 border-signal-teal/25", hex: "#34d1b0" },
-  warning: { label: "Watch", text: "text-signal-amber", bg: "bg-signal-amber/10 border-signal-amber/25", hex: "#f3b54a" },
-  critical: { label: "Critical", text: "text-signal-red", bg: "bg-signal-red/10 border-signal-red/30", hex: "#f2626a" },
+export const SEVERITY_META: Record<Severity, { label: string; ink: string; soft: string; hex: string }> = {
+  healthy: { label: "Stable", ink: "text-ok-ink", soft: "bg-ok-soft", hex: "#2a9d78" },
+  warning: { label: "Watch", ink: "text-watch-ink", soft: "bg-watch-soft", hex: "#e0a32e" },
+  critical: { label: "Critical", ink: "text-alert-ink", soft: "bg-alert-soft", hex: "#e05a4e" },
 };
 
-const ICONS = { healthy: ShieldCheck, warning: TriangleAlert, critical: OctagonAlert } as const;
+const ICONS = { healthy: CircleCheck, warning: TriangleAlert, critical: CircleAlert } as const;
 
 export function StatusBadge({ severity, className }: { severity: Severity; className?: string }) {
   const meta = SEVERITY_META[severity];
   const Icon = ICONS[severity];
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase",
-        meta.bg,
-        meta.text,
-        className,
-      )}
-    >
-      <Icon aria-hidden className="size-3" strokeWidth={2.25} />
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", meta.soft, meta.ink, className)}>
+      <Icon aria-hidden className="size-3.5" strokeWidth={2.25} />
       {meta.label}
     </span>
   );

@@ -76,7 +76,7 @@ export function assessMedicine(m: MedicineStock): { coverage: MedicineCoverage; 
   if (cover === null) {
     return {
       coverage,
-      signal: { domain: "medicine", severity: "warning", ref: m.id, message: `${m.name}: insufficient consumption history to forecast` },
+      signal: { domain: "medicine", severity: "warning", ref: m.id, message: `${m.name}: not enough usage history yet` },
     };
   }
   if (m.quantity === 0 || cover < m.leadTimeDays) {
@@ -86,14 +86,17 @@ export function assessMedicine(m: MedicineStock): { coverage: MedicineCoverage; 
         domain: "medicine",
         severity: "critical",
         ref: m.id,
-        message: `${m.name}: ${formatDays(cover)} of cover, below ${m.leadTimeDays}-day replenishment lead time`,
+        message:
+          m.quantity === 0
+            ? `${m.name} is out of stock`
+            : `${m.name} may run out in ${formatDays(cover)}, restock takes ${m.leadTimeDays} days`,
       },
     };
   }
   if (m.quantity <= m.reorderLevel || cover < m.leadTimeDays * THRESHOLDS.coverWarningFactor) {
     return {
       coverage,
-      signal: { domain: "medicine", severity: "warning", ref: m.id, message: `${m.name}: ${formatDays(cover)} of cover, reorder advised` },
+      signal: { domain: "medicine", severity: "warning", ref: m.id, message: `${m.name} is running low, about ${formatDays(cover)} left` },
     };
   }
   return { coverage, signal: null };
@@ -111,11 +114,11 @@ export function assessFacility(f: Facility): FacilityAssessment {
 
   const bedOccupancy = f.beds.total > 0 ? f.beds.occupied / f.beds.total : null;
   if (bedOccupancy !== null) {
-    const pct = Math.round(bedOccupancy * 100);
+    const free = f.beds.total - f.beds.occupied;
     if (bedOccupancy >= THRESHOLDS.bedOccupancyCritical) {
-      signals.push({ domain: "beds", severity: "critical", message: `Bed occupancy at ${pct}% (${f.beds.total - f.beds.occupied} free)` });
+      signals.push({ domain: "beds", severity: "critical", message: free === 0 ? "No beds free" : `Beds nearly full, ${free} of ${f.beds.total} free` });
     } else if (bedOccupancy >= THRESHOLDS.bedOccupancyWarning) {
-      signals.push({ domain: "beds", severity: "warning", message: `Bed occupancy at ${pct}%` });
+      signals.push({ domain: "beds", severity: "warning", message: `Beds filling up, ${free} of ${f.beds.total} free` });
     }
   }
 
@@ -123,17 +126,17 @@ export function assessFacility(f: Facility): FacilityAssessment {
   if (attendanceRate !== null) {
     const gap = f.doctors.scheduled - f.doctors.present;
     if (attendanceRate < THRESHOLDS.attendanceCritical) {
-      signals.push({ domain: "staffing", severity: "critical", message: `${gap} of ${f.doctors.scheduled} scheduled doctors absent` });
+      signals.push({ domain: "staffing", severity: "critical", message: `${gap} of ${f.doctors.scheduled} doctors absent today` });
     } else if (attendanceRate < THRESHOLDS.attendanceWarning) {
-      signals.push({ domain: "staffing", severity: "warning", message: `${gap} of ${f.doctors.scheduled} scheduled doctors absent` });
+      signals.push({ domain: "staffing", severity: "warning", message: `${gap} of ${f.doctors.scheduled} doctors absent today` });
     }
   }
 
   for (const t of f.diagnostics) {
     if (!t.available || t.kitsRemaining === 0) {
-      signals.push({ domain: "diagnostics", severity: "critical", ref: t.id, message: `${t.name}: test unavailable` });
+      signals.push({ domain: "diagnostics", severity: "critical", ref: t.id, message: `${t.name} test unavailable` });
     } else if (t.dailyUsage > 0 && t.kitsRemaining / t.dailyUsage < THRESHOLDS.diagnosticKitDaysWarning) {
-      signals.push({ domain: "diagnostics", severity: "warning", ref: t.id, message: `${t.name}: ${t.kitsRemaining} kits left` });
+      signals.push({ domain: "diagnostics", severity: "warning", ref: t.id, message: `${t.name} kits running low` });
     }
   }
 
@@ -155,6 +158,8 @@ export function assessFacility(f: Facility): FacilityAssessment {
 }
 
 export function formatDays(days: number): string {
-  if (!Number.isFinite(days)) return "unlimited";
-  return `${days.toFixed(1)} days`;
+  if (!Number.isFinite(days)) return "no recent use";
+  if (days < 1) return "under a day";
+  const rounded = Math.round(days);
+  return `${rounded} ${rounded === 1 ? "day" : "days"}`;
 }

@@ -1,4 +1,4 @@
-# PROJECT_NAME
+# nabz
 
 District healthcare operations intelligence for Primary and Community Health Centres (PHCs/CHCs). It tracks medicine stock, patient footfall, beds, doctor attendance and diagnostic availability, then flags which facilities need attention and why.
 

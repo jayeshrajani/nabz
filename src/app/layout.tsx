@@ -11,13 +11,13 @@ export const metadata: Metadata = {
   description: BRAND.description,
 };
 
-export const viewport: Viewport = { themeColor: "#05080d", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#f2f5f4", colorScheme: "light" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-ink-800 focus:px-3 focus:py-2">
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-surface focus:shadow focus:px-3 focus:py-2">
           Skip to content
         </a>
         {children}
