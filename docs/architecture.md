@@ -2,14 +2,14 @@
 
 ## Layers
 
-| Layer | Location | Responsibility |
-| --- | --- | --- |
-| UI | `src/app`, `src/components`, `src/features` | Rendering, interaction, client state only |
-| API | `src/app/api/**/route.ts`, `src/lib/api` | Authenticate, authorise, validate, call domain/repository, envelope responses |
-| Auth | `src/lib/auth` | ID-token verification, role → capability mapping, session scoping |
-| Domain | `src/domain` | Pure, deterministic calculations (risk, summary, seed). No I/O |
-| Persistence | `src/lib/data` | `DistrictRepository` interface; Firestore and in-memory implementations |
-| Observability | `src/lib/observability`, `src/lib/errors` | JSON logs, request IDs, safe error mapping |
+| Layer         | Location                                    | Responsibility                                                                |
+| ------------- | ------------------------------------------- | ----------------------------------------------------------------------------- |
+| UI            | `src/app`, `src/components`, `src/features` | Rendering, interaction, client state only                                     |
+| API           | `src/app/api/**/route.ts`, `src/lib/api`    | Authenticate, authorise, validate, call domain/repository, envelope responses |
+| Auth          | `src/lib/auth`                              | ID-token verification, role → capability mapping, session scoping             |
+| Domain        | `src/domain`                                | Pure, deterministic calculations (risk, summary, seed). No I/O                |
+| Persistence   | `src/lib/data`                              | `DistrictRepository` interface; Firestore and in-memory implementations       |
+| Observability | `src/lib/observability`, `src/lib/errors`   | JSON logs, request IDs, safe error mapping                                    |
 
 ## Request flow
 
@@ -46,16 +46,16 @@ Firestore retries contended transactions, so concurrent updates to a facility se
 
 All forecasts are computed server-side from stored history; identical history gives identical output.
 
-| Quantity | Method |
-| --- | --- |
-| Level | Mean of the last 7 days (needs ≥ 3 days, otherwise "not enough history") |
-| Trend | OLS slope over the last 14 days, halved (damped) |
-| Typical range | expected ± 1.28 × sample standard deviation of the last 14 days (~80% band under a normal approximation; shown as "anywhere from X to Y", not as a confidence score) |
-| Days until stock-out | Step through forecast demand day by day until stock is exhausted (capped at one year); pessimistic variant uses the high end of the range |
-| Safety stock | 1.65 × σ × √(lead time) |
-| Reorder point | level × lead time + safety stock |
-| Suggested order | level × (lead time + 14 days) + safety stock − current stock |
-| Footfall surge | today ≥ 1.3 × mean of the previous 7 days |
+| Quantity             | Method                                                                                                                                                               |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Level                | Mean of the last 7 days (needs ≥ 3 days, otherwise "not enough history")                                                                                             |
+| Trend                | OLS slope over the last 14 days, halved (damped)                                                                                                                     |
+| Typical range        | expected ± 1.28 × sample standard deviation of the last 14 days (~80% band under a normal approximation; shown as "anywhere from X to Y", not as a confidence score) |
+| Days until stock-out | Step through forecast demand day by day until stock is exhausted (capped at one year); pessimistic variant uses the high end of the range                            |
+| Safety stock         | 1.65 × σ × √(lead time)                                                                                                                                              |
+| Reorder point        | level × lead time + safety stock                                                                                                                                     |
+| Suggested order      | level × (lead time + 14 days) + safety stock − current stock                                                                                                         |
+| Footfall surge       | today ≥ 1.3 × mean of the previous 7 days                                                                                                                            |
 
 Underperforming centres are ranked by 3 points per critical signal and 1 per warning, with ties broken by lower doctor attendance.
 

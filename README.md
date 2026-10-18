@@ -18,14 +18,14 @@ District healthcare operations intelligence for Primary and Community Health Cen
 
 ## Problem statement → feature map
 
-| Requirement | Where it lives |
-| --- | --- |
-| Stock monitoring + early stock-out warnings | [src/domain/risk.ts](src/domain/risk.ts), Stock-out watch on Overview |
-| Patient footfall, beds, doctor attendance, test availability audits | Facility workspace `/facilities/[id]`, every update audited ([src/domain/operations.ts](src/domain/operations.ts)) |
-| AI-driven demand forecasts | [src/domain/forecast.ts](src/domain/forecast.ts) (deterministic) + Ask nabz (Gemini, grounded) |
-| Smart redistribution across PHCs/CHCs | [src/domain/redistribution.ts](src/domain/redistribution.ts), Transfers tab with human approval |
-| Auto-flag underperforming / under-resourced centres | [src/domain/interventions.ts](src/domain/interventions.ts): each flagged centre is classed as underperforming or under-resourced (including patients per doctor), given a priority and a recommended action; shown on Overview as "Flagged for district intervention" |
-| Multilingual | 7 languages in [src/i18n](src/i18n), completeness enforced by tests |
+| Requirement                                                         | Where it lives                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stock monitoring + early stock-out warnings                         | [src/domain/risk.ts](src/domain/risk.ts), Stock-out watch on Overview                                                                                                                                                                                                 |
+| Patient footfall, beds, doctor attendance, test availability audits | Facility workspace `/facilities/[id]`, every update audited ([src/domain/operations.ts](src/domain/operations.ts))                                                                                                                                                    |
+| AI-driven demand forecasts                                          | [src/domain/forecast.ts](src/domain/forecast.ts) (deterministic) + Ask nabz (Gemini, grounded)                                                                                                                                                                        |
+| Smart redistribution across PHCs/CHCs                               | [src/domain/redistribution.ts](src/domain/redistribution.ts), Transfers tab with human approval                                                                                                                                                                       |
+| Auto-flag underperforming / under-resourced centres                 | [src/domain/interventions.ts](src/domain/interventions.ts): each flagged centre is classed as underperforming or under-resourced (including patients per doctor), given a priority and a recommended action; shown on Overview as "Flagged for district intervention" |
+| Multilingual                                                        | 7 languages in [src/i18n](src/i18n), completeness enforced by tests                                                                                                                                                                                                   |
 
 ## Stack
 
@@ -43,20 +43,20 @@ With Firebase, copy `.env.example` to `.env.local`, fill in the values, enable *
 ## Checks
 
 ```bash
-npm run lint && npm run typecheck && npm test && npm run build
+npm run check && npm run build   # format check, zero-warning lint, strict typecheck, tests, build
 ```
 
 ## Environment
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_APP_ID` | public, build-time | Firebase web config (not secrets) |
-| `FIREBASE_PROJECT_ID` | server | Admin SDK project (defaults to `GOOGLE_CLOUD_PROJECT`) |
-| `AUTH_MODE=local`, `DATA_BACKEND=memory`, `NEXT_PUBLIC_AUTH_MODE=local` | dev only | No-Firebase mode; ignored when `NODE_ENV=production` |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | server secret | Primary AI provider (both required to enable) |
-| `CEREBRAS_API_KEY`, `CEREBRAS_MODEL` | server secret | Fallback AI provider |
-| `AI_PRIMARY_PROVIDER` | server | `gemini` (default) or `cerebras` |
-| `AI_REQUEST_TIMEOUT_MS` | server | Per-provider timeout, 1000-60000 (default 12000) |
+| Variable                                                                 | Scope              | Purpose                                                |
+| ------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------ |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_APP_ID` | public, build-time | Firebase web config (not secrets)                      |
+| `FIREBASE_PROJECT_ID`                                                    | server             | Admin SDK project (defaults to `GOOGLE_CLOUD_PROJECT`) |
+| `AUTH_MODE=local`, `DATA_BACKEND=memory`, `NEXT_PUBLIC_AUTH_MODE=local`  | dev only           | No-Firebase mode; ignored when `NODE_ENV=production`   |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`                                         | server secret      | Primary AI provider (both required to enable)          |
+| `CEREBRAS_API_KEY`, `CEREBRAS_MODEL`                                     | server secret      | Fallback AI provider                                   |
+| `AI_PRIMARY_PROVIDER`                                                    | server             | `gemini` (default) or `cerebras`                       |
+| `AI_REQUEST_TIMEOUT_MS`                                                  | server             | Per-provider timeout, 1000-60000 (default 12000)       |
 
 Without AI keys the assistant still works, returning computed answers built directly from the data.
 

@@ -32,7 +32,9 @@ export function StrugglingList({ flags, facilities }: { flags: InterventionFlag[
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-display text-lg font-semibold">{item.facility.name}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${urgent ? "bg-alert-soft text-alert-ink" : "bg-watch-soft text-watch-ink"}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${urgent ? "bg-alert-soft text-alert-ink" : "bg-watch-soft text-watch-ink"}`}
+                    >
                       {t(urgent ? "intervene.urgent" : "intervene.high")}
                     </span>
                     {flag.kinds.map((k) => (
@@ -42,7 +44,9 @@ export function StrugglingList({ flags, facilities }: { flags: InterventionFlag[
                     ))}
                   </span>
                   {top && <span className="mt-1 block text-sm text-ink-muted">{signal(top)}</span>}
-                  {flag.patientsPerDoctor !== null && <span className="block text-sm text-ink-muted">{t("intervene.load", { n: flag.patientsPerDoctor })}</span>}
+                  {flag.patientsPerDoctor !== null && (
+                    <span className="block text-sm text-ink-muted">{t("intervene.load", { n: flag.patientsPerDoctor })}</span>
+                  )}
                   {flag.actions.length > 0 && (
                     <ul className="mt-2 list-disc pl-5 text-sm text-ink">
                       {flag.actions.map((a) => (
@@ -51,7 +55,10 @@ export function StrugglingList({ flags, facilities }: { flags: InterventionFlag[
                     </ul>
                   )}
                 </span>
-                <ArrowUpRight aria-hidden className="mt-1 size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink" />
+                <ArrowUpRight
+                  aria-hidden
+                  className="mt-1 size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink"
+                />
               </Link>
             </li>
           );

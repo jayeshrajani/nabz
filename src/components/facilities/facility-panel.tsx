@@ -38,7 +38,12 @@ export function FacilityPanel({ item, onClose }: { item: AssessedFacility; onClo
           </h2>
           <StatusBadge severity={a.status} className="mt-2" />
         </div>
-        <button type="button" aria-label={t("common.close")} onClick={onClose} className="rounded-full p-2 text-ink-subtle hover:bg-surface-2 hover:text-ink">
+        <button
+          type="button"
+          aria-label={t("common.close")}
+          onClick={onClose}
+          className="rounded-full p-2 text-ink-subtle hover:bg-surface-2 hover:text-ink"
+        >
           <X aria-hidden className="size-4" />
         </button>
       </header>
@@ -64,12 +69,18 @@ export function FacilityPanel({ item, onClose }: { item: AssessedFacility; onClo
           <Fact label={t("fact.bedsFree")} value={`${f.beds.total - f.beds.occupied}/${f.beds.total}`} />
           <Fact label={t("fact.doctorsIn")} value={`${f.doctors.present}/${f.doctors.scheduled}`} />
           <Fact label={t("fact.patientsToday")} value={a.footfallToday?.toString() ?? "-"} />
-          <Fact label={t("fact.testsWorking")} value={`${f.diagnostics.filter((x) => x.available && x.kitsRemaining > 0).length}/${f.diagnostics.length}`} />
+          <Fact
+            label={t("fact.testsWorking")}
+            value={`${f.diagnostics.filter((x) => x.available && x.kitsRemaining > 0).length}/${f.diagnostics.length}`}
+          />
         </div>
       </div>
 
       <div className="border-t border-line p-4">
-        <Link href={`/facilities/${f.id}`} className="flex h-11 items-center justify-center gap-1.5 rounded-full bg-ink text-sm font-medium text-white transition-colors hover:bg-forest">
+        <Link
+          href={`/facilities/${f.id}`}
+          className="flex h-11 items-center justify-center gap-1.5 rounded-full bg-ink text-sm font-medium text-white transition-colors hover:bg-forest"
+        >
           {t("common.open")} <ArrowUpRight aria-hidden className="size-4" />
         </Link>
       </div>

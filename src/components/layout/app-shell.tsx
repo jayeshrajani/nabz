@@ -37,7 +37,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <Link
                       href={tab.href}
                       aria-current={active ? "page" : undefined}
-                      className={cn("block rounded-full px-3 py-1.5 font-medium transition-colors sm:px-4", active ? "bg-forest text-white" : "text-ink-muted hover:text-ink")}
+                      className={cn(
+                        "block rounded-full px-3 py-1.5 font-medium transition-colors sm:px-4",
+                        active ? "bg-forest text-white" : "text-ink-muted hover:text-ink",
+                      )}
                     >
                       {t(tab.label)}
                     </Link>
@@ -70,7 +73,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main id="main" className="mx-auto max-w-[1360px] px-4 pt-6 pb-24 sm:px-8">
         {children}
       </main>
-
     </div>
   );
 }

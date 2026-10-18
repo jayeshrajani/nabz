@@ -122,7 +122,8 @@ export function forecastStock(m: MedicineStock): StockForecast {
   return {
     medicineId: m.id,
     averageDaily: f.level,
-    daysUntilStockOut: f.level <= 0 && f.trendPerDay <= 0 ? Number.POSITIVE_INFINITY : round1(daysUntilZero(available, f.level, f.trendPerDay)),
+    daysUntilStockOut:
+      f.level <= 0 && f.trendPerDay <= 0 ? Number.POSITIVE_INFINITY : round1(daysUntilZero(available, f.level, f.trendPerDay)),
     daysUntilStockOutPessimistic: round1(daysUntilZero(available, f.level + FORECAST.rangeZ * f.spread, f.trendPerDay)),
     safetyStock,
     reorderPoint,

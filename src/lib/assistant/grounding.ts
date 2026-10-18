@@ -12,7 +12,9 @@ export type AssistantRequest = z.infer<typeof AssistantRequestSchema>;
 export const AssistantAnswerSchema = z.object({
   answer: z.string().min(1).max(2000),
   facts: z
-    .array(z.object({ text: z.string().min(1).max(300), kind: z.enum(["recorded", "forecast"]), facilityId: z.string().max(64).optional() }))
+    .array(
+      z.object({ text: z.string().min(1).max(300), kind: z.enum(["recorded", "forecast"]), facilityId: z.string().max(64).optional() }),
+    )
     .max(8),
 });
 export type AssistantAnswer = z.infer<typeof AssistantAnswerSchema>;
@@ -70,7 +72,10 @@ export function buildGrounding(view: DistrictView) {
       issues: a.signals.map((s) => s.message),
       medicinesAtRisk: f.medicines
         .map((m) => ({ m, fc: forecastStock(m) }))
-        .filter(({ fc }) => fc.shouldReorder || (fc.daysUntilStockOut !== null && Number.isFinite(fc.daysUntilStockOut) && fc.daysUntilStockOut < 14))
+        .filter(
+          ({ fc }) =>
+            fc.shouldReorder || (fc.daysUntilStockOut !== null && Number.isFinite(fc.daysUntilStockOut) && fc.daysUntilStockOut < 14),
+        )
         .map(({ m, fc }) => ({
           medicine: m.name,
           inStock: m.quantity,
@@ -145,15 +150,19 @@ export function fallbackAnswer(view: DistrictView, question: string, locale: Loc
     const facts = view.suggestions.slice(0, 5).map((s) => ({
       kind: "forecast" as const,
       facilityId: s.toFacilityId,
-      text: t("assistant.transferLine", { from: name(s.fromFacilityId), to: name(s.toFacilityId), qty: s.quantity, unit: s.unit, medicine: s.medicineName }),
+      text: t("assistant.transferLine", {
+        from: name(s.fromFacilityId),
+        to: name(s.toFacilityId),
+        qty: s.quantity,
+        unit: s.unit,
+        medicine: s.medicineName,
+      }),
     }));
     return { answer: facts.length ? t("assistant.fb.transfers") : t("assistant.fb.none"), facts };
   }
 
   const rows = view.facilities.flatMap(({ facility, assessment }) =>
-    assessment.signals
-      .filter((s) => topic === "overview" || s.domain === topic)
-      .map((s) => ({ facility, s })),
+    assessment.signals.filter((s) => topic === "overview" || s.domain === topic).map((s) => ({ facility, s })),
   );
   rows.sort((a, b) => (a.s.severity === b.s.severity ? 0 : a.s.severity === "critical" ? -1 : 1));
   const facts = rows.slice(0, 6).map(({ facility, s }) => ({

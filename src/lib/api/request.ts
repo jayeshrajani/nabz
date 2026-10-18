@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 
-export const MAX_BODY_BYTES = 8 * 1024;
+const MAX_BODY_BYTES = 8 * 1024;
 
 /** Reads the body chunk by chunk and aborts once it exceeds `maxBytes`, whatever Content-Length claims. */
 async function readBounded(request: Request, maxBytes: number): Promise<string> {
@@ -30,7 +30,8 @@ async function readBounded(request: Request, maxBytes: number): Promise<string> 
 
 export async function readJson<S extends z.ZodType>(request: Request, schema: S, maxBytes = MAX_BODY_BYTES): Promise<z.infer<S>> {
   const contentType = request.headers.get("content-type");
-  if (contentType && !/^application\/json\b/i.test(contentType)) throw new AppError("VALIDATION_FAILED", "Content-Type must be application/json.");
+  if (contentType && !/^application\/json\b/i.test(contentType))
+    throw new AppError("VALIDATION_FAILED", "Content-Type must be application/json.");
   const declared = Number(request.headers.get("content-length") ?? 0);
   if (declared > maxBytes) throw new AppError("PAYLOAD_TOO_LARGE", "Request body is too large.");
 

@@ -12,7 +12,7 @@ export const REDISTRIBUTION = {
   kmPerUnit: 2.4,
 } as const;
 
-export const TransferStatusSchema = z.enum(["proposed", "approved", "dispatched", "received", "cancelled"]);
+const TransferStatusSchema = z.enum(["proposed", "approved", "dispatched", "received", "cancelled"]);
 export const TransferActionSchema = z.enum(["approve", "dispatch", "receive", "cancel"]);
 export type TransferStatus = z.infer<typeof TransferStatusSchema>;
 export type TransferAction = z.infer<typeof TransferActionSchema>;
@@ -36,7 +36,7 @@ export const TransferSchema = TransferRequestSchema.extend({
 });
 export type Transfer = z.infer<typeof TransferSchema>;
 
-export const ACTIVE_STATUSES: readonly TransferStatus[] = ["proposed", "approved", "dispatched"];
+const ACTIVE_STATUSES: readonly TransferStatus[] = ["proposed", "approved", "dispatched"];
 
 const TRANSITIONS: Record<TransferAction, { from: readonly TransferStatus[]; to: TransferStatus }> = {
   approve: { from: ["proposed"], to: "approved" },
@@ -45,7 +45,7 @@ const TRANSITIONS: Record<TransferAction, { from: readonly TransferStatus[]; to:
   cancel: { from: ["proposed", "approved"], to: "cancelled" },
 };
 
-export function canApply(status: TransferStatus, action: TransferAction): boolean {
+function canApply(status: TransferStatus, action: TransferAction): boolean {
   return TRANSITIONS[action].from.includes(status);
 }
 
@@ -100,7 +100,8 @@ export function suggestTransfers(facilities: readonly Facility[], transfers: rea
   for (const t of transfers) {
     if (!ACTIVE_STATUSES.includes(t.status)) continue;
     incoming.set(`${t.toFacilityId}:${t.medicineId}`, (incoming.get(`${t.toFacilityId}:${t.medicineId}`) ?? 0) + t.quantity);
-    if (t.status === "proposed") outgoing.set(`${t.fromFacilityId}:${t.medicineId}`, (outgoing.get(`${t.fromFacilityId}:${t.medicineId}`) ?? 0) + t.quantity);
+    if (t.status === "proposed")
+      outgoing.set(`${t.fromFacilityId}:${t.medicineId}`, (outgoing.get(`${t.fromFacilityId}:${t.medicineId}`) ?? 0) + t.quantity);
   }
 
   const suggestions: TransferSuggestion[] = [];
@@ -122,7 +123,10 @@ export function suggestTransfers(facilities: readonly Facility[], transfers: rea
           const surplus = transferableSurplus(dm) - (outgoing.get(`${d.id}:${m.id}`) ?? 0);
           return surplus > 0 ? [{ facility: d, medicine: dm, surplus, km: distanceKm(receiver, d) }] : [];
         })
-        .sort((a, b) => Number(b.surplus >= shortfall) - Number(a.surplus >= shortfall) || a.km - b.km || a.facility.id.localeCompare(b.facility.id));
+        .sort(
+          (a, b) =>
+            Number(b.surplus >= shortfall) - Number(a.surplus >= shortfall) || a.km - b.km || a.facility.id.localeCompare(b.facility.id),
+        );
 
       const best = donors[0];
       if (!best) continue;
@@ -199,7 +203,13 @@ export interface TransferResult {
  * Advances a transfer one step. Approval reserves donor stock, dispatch removes it from the donor,
  * receipt adds it to the receiver. Nothing is moved before the matching step is confirmed.
  */
-export function applyTransferAction(transfer: Transfer, donorIn: Facility, receiverIn: Facility, action: TransferAction, ctx: Omit<TransferCtx, "id">): TransferResult {
+export function applyTransferAction(
+  transfer: Transfer,
+  donorIn: Facility,
+  receiverIn: Facility,
+  action: TransferAction,
+  ctx: Omit<TransferCtx, "id">,
+): TransferResult {
   if (!canApply(transfer.status, action)) throw new DomainRuleError(`Cannot ${action} a transfer that is ${transfer.status}.`);
   const donor = structuredClone(donorIn);
   const receiver = structuredClone(receiverIn);

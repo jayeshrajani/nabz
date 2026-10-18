@@ -15,7 +15,12 @@ function Change({ pct }: { pct: number | null }) {
   const up = pct > 0;
   const Icon = up ? TrendingUp : TrendingDown;
   return (
-    <span className={cn("tabular inline-flex items-center gap-1 text-xs font-medium", Math.abs(pct) < 3 ? "text-ink-muted" : up ? "text-watch-ink" : "text-ok-ink")}>
+    <span
+      className={cn(
+        "tabular inline-flex items-center gap-1 text-xs font-medium",
+        Math.abs(pct) < 3 ? "text-ink-muted" : up ? "text-watch-ink" : "text-ok-ink",
+      )}
+    >
       <Icon aria-hidden className="size-3.5" />
       {up ? "+" : ""}
       {pct}%
@@ -29,7 +34,11 @@ export function HistoryTile({ view, className }: { view: DistrictView; className
   const avg = rollingAverage(series);
   const end = Date.parse(`${view.district.historyEndDate}T00:00:00Z`);
   const fmt = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "short", timeZone: "UTC" });
-  const data = series.map((v, i) => ({ label: fmt.format(new Date(end - (series.length - 1 - i) * 86_400_000)), patients: v, avg: avg[i] }));
+  const data = series.map((v, i) => ({
+    label: fmt.format(new Date(end - (series.length - 1 - i) * 86_400_000)),
+    patients: v,
+    avg: avg[i],
+  }));
   const peak = data.reduce((best, d) => (d.patients > best.patients ? d : best), data[0] ?? { label: "", patients: 0, avg: null });
   const week = series.slice(-7).reduce((a, b) => a + b, 0);
   const trends = consumptionTrends(view).slice(0, 6);

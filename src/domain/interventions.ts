@@ -4,7 +4,8 @@ import type { Facility } from "./schemas";
 
 /** Underperforming = gaps the centre should control; under-resourced = demand beyond its capacity. */
 export type InterventionKind = "underperforming" | "underResourced";
-export type InterventionAction = "deployRelief" | "approveTransfer" | "emergencyRestock" | "referPatients" | "restockTests" | "surgeSupport";
+export type InterventionAction =
+  "deployRelief" | "approveTransfer" | "emergencyRestock" | "referPatients" | "restockTests" | "surgeSupport";
 export type InterventionPriority = "urgent" | "high";
 
 export interface InterventionFlag {
@@ -21,7 +22,12 @@ export interface InterventionFlag {
 export const PATIENTS_PER_DOCTOR_LIMIT = 60;
 const MIN_SCORE_TO_FLAG = 2;
 
-const UNDERPERFORMING: ReadonlySet<SignalCode> = new Set(["staffing.absent", "medicine.out", "medicine.runsOut", "diagnostics.unavailable"]);
+const UNDERPERFORMING: ReadonlySet<SignalCode> = new Set([
+  "staffing.absent",
+  "medicine.out",
+  "medicine.runsOut",
+  "diagnostics.unavailable",
+]);
 const UNDER_RESOURCED: ReadonlySet<SignalCode> = new Set(["beds.none", "beds.nearlyFull", "beds.filling", "footfall.surge"]);
 
 interface Assessed {
@@ -43,7 +49,8 @@ export function flagInterventions(assessed: readonly Assessed[], suggestions: re
         if (UNDERPERFORMING.has(s.code)) kinds.add("underperforming");
         if (UNDER_RESOURCED.has(s.code)) kinds.add("underResourced");
         if (s.code === "staffing.absent") actions.add("deployRelief");
-        if (s.code === "medicine.out" || s.code === "medicine.runsOut") actions.add(transferable.has(facility.id) ? "approveTransfer" : "emergencyRestock");
+        if (s.code === "medicine.out" || s.code === "medicine.runsOut")
+          actions.add(transferable.has(facility.id) ? "approveTransfer" : "emergencyRestock");
         if (s.code === "beds.none" || s.code === "beds.nearlyFull") actions.add("referPatients");
         if (s.code === "diagnostics.unavailable") actions.add("restockTests");
         if (s.code === "footfall.surge") actions.add("surgeSupport");

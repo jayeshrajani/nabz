@@ -93,7 +93,10 @@ export function SplashScreen() {
             />
           </div>
 
-          <div aria-hidden className="absolute top-6 right-6 flex items-center gap-2 font-mono text-[11px] tracking-[0.12em] text-mint/60 uppercase sm:top-8 sm:right-10">
+          <div
+            aria-hidden
+            className="absolute top-6 right-6 flex items-center gap-2 font-mono text-[11px] tracking-[0.12em] text-mint/60 uppercase sm:top-8 sm:right-10"
+          >
             <span className="size-1.5 rounded-full bg-alert animate-[nabz-beat-dot_0.8s_ease-out_infinite]" />
             75 bpm
           </div>
@@ -118,7 +121,12 @@ export function SplashScreen() {
             </AnimatePresence>
           </div>
 
-          <svg aria-hidden viewBox="0 0 1200 120" className="relative mt-10 w-[min(92vw,760px)]" style={{ maskImage: "linear-gradient(90deg, transparent, black 14%, black 86%, transparent)" }}>
+          <svg
+            aria-hidden
+            viewBox="0 0 1200 120"
+            className="relative mt-10 w-[min(92vw,760px)]"
+            style={{ maskImage: "linear-gradient(90deg, transparent, black 14%, black 86%, transparent)" }}
+          >
             <defs>
               <filter id="nabz-glow" x="-20%" y="-50%" width="140%" height="200%">
                 <feGaussianBlur stdDeviation="5" result="b" />
@@ -131,10 +139,29 @@ export function SplashScreen() {
             <path d={ECG} fill="none" stroke="rgb(255 255 255 / 0.08)" strokeWidth="2" strokeLinejoin="round" />
             {!reduce && (
               <>
-                <path d={ECG} pathLength={1} fill="none" stroke="rgb(159 232 194 / 0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="0.42 1.6">
+                <path
+                  d={ECG}
+                  pathLength={1}
+                  fill="none"
+                  stroke="rgb(159 232 194 / 0.35)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeDasharray="0.42 1.6"
+                >
                   <animate attributeName="stroke-dashoffset" from="0.42" to="-0.58" dur={`${SWEEP_S}s`} repeatCount="indefinite" />
                 </path>
-                <path d={ECG} pathLength={1} fill="none" stroke="#9fe8c2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="0.16 1.6" filter="url(#nabz-glow)">
+                <path
+                  d={ECG}
+                  pathLength={1}
+                  fill="none"
+                  stroke="#9fe8c2"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeDasharray="0.16 1.6"
+                  filter="url(#nabz-glow)"
+                >
                   <animate attributeName="stroke-dashoffset" from="0.16" to="-0.84" dur={`${SWEEP_S}s`} repeatCount="indefinite" />
                 </path>
                 <g filter="url(#nabz-glow)">

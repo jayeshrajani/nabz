@@ -33,14 +33,29 @@ describe("flagInterventions", () => {
 
   it("flags full beds and patient overload as under-resourced", () => {
     const today = (PATIENTS_PER_DOCTOR_LIMIT + 10) * 2;
-    const [f] = flag({ ...base, beds: { total: 10, occupied: 10 }, doctors: { scheduled: 2, present: 2 }, footfall: [...base.footfall, today] });
+    const [f] = flag({
+      ...base,
+      beds: { total: 10, occupied: 10 },
+      doctors: { scheduled: 2, present: 2 },
+      footfall: [...base.footfall, today],
+    });
     expect(f!.kinds).toContain("underResourced");
     expect(f!.actions).toEqual(expect.arrayContaining(["referPatients", "surgeSupport"]));
     expect(f!.patientsPerDoctor).toBe(today / 2);
   });
 
   it("recommends a transfer when one is suggested, otherwise an emergency restock", () => {
-    const med = { id: "ors", name: "ORS", unit: "sachets", essential: true, quantity: 0, reserved: 0, reorderLevel: 10, leadTimeDays: 5, dailyConsumption: [5, 5, 5, 5, 5, 5, 5] };
+    const med = {
+      id: "ors",
+      name: "ORS",
+      unit: "sachets",
+      essential: true,
+      quantity: 0,
+      reserved: 0,
+      reorderLevel: 10,
+      leadTimeDays: 5,
+      dailyConsumption: [5, 5, 5, 5, 5, 5, 5],
+    };
     const f = { ...base, medicines: [med] };
     const assessed = [{ facility: f, assessment: assessFacility(f) }];
     expect(flagInterventions(assessed, [])[0]!.actions).toContain("emergencyRestock");

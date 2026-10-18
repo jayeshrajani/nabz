@@ -28,12 +28,28 @@ export function KpiRow({ view }: { view: DistrictView }) {
   const { summary } = view;
   const atRisk = stockOutWatch(view).filter((r) => r.severity === "critical").length;
   const moving = view.transfers.filter((x) => x.status === "approved" || x.status === "dispatched").length;
-  const testsDown = view.facilities.reduce((s, f) => s + f.facility.diagnostics.filter((d) => !d.available || d.kitsRemaining === 0).length, 0);
+  const testsDown = view.facilities.reduce(
+    (s, f) => s + f.facility.diagnostics.filter((d) => !d.available || d.kitsRemaining === 0).length,
+    0,
+  );
 
   const items: Kpi[] = [
     { icon: Pill, label: t("kpi.atRisk"), value: atRisk, tone: atRisk ? "alert" : "ok", href: "#stock-out-watch" },
-    { icon: BedDouble, label: t("kpi.bedsFree"), value: summary.bedsTotal - summary.bedsOccupied, of: summary.bedsTotal, tone: "neutral", href: "/centres" },
-    { icon: Stethoscope, label: t("kpi.doctorsAway"), value: summary.doctorGap, tone: summary.doctorGap ? "watch" : "ok", href: "/centres" },
+    {
+      icon: BedDouble,
+      label: t("kpi.bedsFree"),
+      value: summary.bedsTotal - summary.bedsOccupied,
+      of: summary.bedsTotal,
+      tone: "neutral",
+      href: "/centres",
+    },
+    {
+      icon: Stethoscope,
+      label: t("kpi.doctorsAway"),
+      value: summary.doctorGap,
+      tone: summary.doctorGap ? "watch" : "ok",
+      href: "/centres",
+    },
     { icon: FlaskConical, label: t("kpi.testsDown"), value: testsDown, tone: testsDown ? "watch" : "ok", href: "/centres" },
     { icon: Waypoints, label: t("kpi.suggested"), value: view.suggestions.length, tone: "neutral", href: "/transfers" },
     { icon: Truck, label: t("kpi.inProgress"), value: moving, tone: "neutral", href: "/transfers" },

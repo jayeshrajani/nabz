@@ -19,7 +19,10 @@ export function createCerebrasProvider(apiKey: string, model: string, fetchImpl:
             max_completion_tokens: 1024,
             response_format: { type: "json_object" },
             messages: [
-              { role: "system", content: `${request.system}\n\nReturn only a JSON object matching this JSON Schema:\n${JSON.stringify(request.jsonSchema)}` },
+              {
+                role: "system",
+                content: `${request.system}\n\nReturn only a JSON object matching this JSON Schema:\n${JSON.stringify(request.jsonSchema)}`,
+              },
               { role: "user", content: request.prompt },
             ],
           }),

@@ -39,7 +39,11 @@ export function DistrictNetwork2D({ facilities, selectedId, onSelect, labels }: 
           const meta = SEVERITY_META[assessment.status];
           const selected = facility.id === selectedId;
           return (
-            <li key={facility.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: toPct(facility.position.x), top: toPct(facility.position.z) }}>
+            <li
+              key={facility.id}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: toPct(facility.position.x), top: toPct(facility.position.z) }}
+            >
               <button
                 type="button"
                 aria-pressed={selected}

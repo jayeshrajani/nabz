@@ -36,6 +36,7 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 **Endpoints:** `POST /api/session`, `GET /api/facilities`, `GET /healthz`, `GET /api/health`
 
 **Known limitations / deferred:**
+
 - [ ] Firebase Emulator-backed tests (rules + Firestore repository) — needs Java + firebase-tools in CI
 - [ ] Playwright E2E (planned V4)
 - [ ] Real Cloud Run deployment not yet performed
@@ -90,9 +91,9 @@ Browser ──(Firebase anon ID token)──▶ Route handler ─▶ authenticat
 
 ## Risks
 
-| Risk | Mitigation |
-| --- | --- |
-| WebGL unsupported / low-end devices | 2D fallback, capped DPR, demand frameloop with reduced motion |
-| Admin SDK bypasses rules | Every handler calls `authenticate()` and uses `principal.sessionId`; rules default-deny |
-| AI outage | Deterministic results always returned; AI optional |
-| Cloud Run reserves `/healthz` on `run.app` | `/api/health` alias |
+| Risk                                       | Mitigation                                                                              |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| WebGL unsupported / low-end devices        | 2D fallback, capped DPR, demand frameloop with reduced motion                           |
+| Admin SDK bypasses rules                   | Every handler calls `authenticate()` and uses `principal.sessionId`; rules default-deny |
+| AI outage                                  | Deterministic results always returned; AI optional                                      |
+| Cloud Run reserves `/healthz` on `run.app` | `/api/health` alias                                                                     |

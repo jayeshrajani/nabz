@@ -14,7 +14,9 @@ describe("security headers", () => {
   it("sends CSP, HSTS and anti-framing headers on every route", async () => {
     const [rule] = await nextConfig.headers!();
     const keys = rule!.headers.map((h) => h.key);
-    expect(keys).toEqual(expect.arrayContaining(["Content-Security-Policy", "Strict-Transport-Security", "X-Frame-Options", "X-Content-Type-Options"]));
+    expect(keys).toEqual(
+      expect.arrayContaining(["Content-Security-Policy", "Strict-Transport-Security", "X-Frame-Options", "X-Content-Type-Options"]),
+    );
     expect(CONTENT_SECURITY_POLICY).toContain("object-src 'none'");
     expect(CONTENT_SECURITY_POLICY).toContain("frame-ancestors 'none'");
   });
@@ -44,7 +46,12 @@ describe("readJson", () => {
         if (pulled > 1000) controller.close();
       },
     });
-    const request = new Request("http://test/api", { method: "POST", body, headers: { "content-type": "application/json" }, duplex: "half" } as RequestInit);
+    const request = new Request("http://test/api", {
+      method: "POST",
+      body,
+      headers: { "content-type": "application/json" },
+      duplex: "half",
+    } as RequestInit);
     await expect(readJson(request, Schema, 64)).rejects.toMatchObject({ code: "PAYLOAD_TOO_LARGE" });
     expect(pulled).toBeLessThan(10);
   });

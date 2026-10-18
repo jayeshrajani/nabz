@@ -37,7 +37,12 @@ export function PatientsGauge({ view, className }: { view: DistrictView; classNa
         <p className="tabular font-display text-6xl font-medium tracking-tight">{number(today)}</p>
         <p className="mt-1 text-sm text-white/55">{usual !== null ? t("gauge.usual", { n: number(usual) }) : ""}</p>
       </div>
-      <svg viewBox="0 0 260 150" className="mt-2 w-full" role="img" aria-label={`${t("gauge.title")}: ${today}, ${t("gauge.low")} ${low}, ${t("gauge.high")} ${high}`}>
+      <svg
+        viewBox="0 0 260 150"
+        className="mt-2 w-full"
+        role="img"
+        aria-label={`${t("gauge.title")}: ${today}, ${t("gauge.low")} ${low}, ${t("gauge.high")} ${high}`}
+      >
         <defs>
           <linearGradient id={gradient} x1="0" x2="1">
             <stop offset="0%" stopColor="#9fe8c2" />
@@ -46,7 +51,15 @@ export function PatientsGauge({ view, className }: { view: DistrictView; classNa
           </linearGradient>
         </defs>
         <path d={arc} fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth={18} strokeLinecap="round" />
-        <path d={arc} fill="none" stroke={`url(#${gradient})`} strokeWidth={18} strokeLinecap="round" pathLength={1} strokeDasharray={`${fraction} 1`} />
+        <path
+          d={arc}
+          fill="none"
+          stroke={`url(#${gradient})`}
+          strokeWidth={18}
+          strokeLinecap="round"
+          pathLength={1}
+          strokeDasharray={`${fraction} 1`}
+        />
         <circle cx={mx} cy={my} r={7} fill="#fff" />
       </svg>
       <div className="tabular -mt-3 flex justify-between text-[11px] text-white/50">

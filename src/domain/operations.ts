@@ -63,7 +63,11 @@ function bumpToday(series: number[], by: number): number[] {
 }
 
 /** Pure state transition. Throws DomainRuleError on any invariant violation; never returns invalid state. */
-export function applyFacilityUpdate(facility: Facility, update: FacilityUpdate, ctx: { actorUid: string; at: string; id: string }): UpdateResult {
+export function applyFacilityUpdate(
+  facility: Facility,
+  update: FacilityUpdate,
+  ctx: { actorUid: string; at: string; id: string },
+): UpdateResult {
   const next: Facility = structuredClone(facility);
   next.updatedAt = ctx.at;
   let summary: string;
@@ -98,11 +102,15 @@ export function applyFacilityUpdate(facility: Facility, update: FacilityUpdate, 
       } else if (update.movement === "issue") {
         if (update.quantity === 0) throw new DomainRuleError("Issued quantity must be more than zero.");
         const free = before - medicine.reserved;
-        if (update.quantity > free) throw new DomainRuleError(`Only ${free} ${medicine.unit} available${medicine.reserved ? ` (${medicine.reserved} held for transfers)` : ""}.`);
+        if (update.quantity > free)
+          throw new DomainRuleError(
+            `Only ${free} ${medicine.unit} available${medicine.reserved ? ` (${medicine.reserved} held for transfers)` : ""}.`,
+          );
         medicine.quantity = before - update.quantity;
         medicine.dailyConsumption = bumpToday(medicine.dailyConsumption, update.quantity);
       } else {
-        if (update.quantity < medicine.reserved) throw new DomainRuleError(`${medicine.reserved} ${medicine.unit} are held for transfers; count cannot be lower.`);
+        if (update.quantity < medicine.reserved)
+          throw new DomainRuleError(`${medicine.reserved} ${medicine.unit} are held for transfers; count cannot be lower.`);
         medicine.quantity = update.quantity;
       }
       const delta = medicine.quantity - before;

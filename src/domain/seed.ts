@@ -6,7 +6,7 @@ import type { DiagnosticTest, District, Facility, FacilityType, MedicineStock } 
  */
 
 export const SEED_HISTORY_DAYS = 30;
-export const SEED_DISTRICT_ID = "bhopal";
+const SEED_DISTRICT_ID = "bhopal";
 
 type Profile = "healthy" | "surplus" | "stockout" | "beds" | "staffing" | "diagnostics";
 
@@ -141,9 +141,7 @@ export function buildSeedFacilities(updatedAt: string): Facility[] {
     const present = spec.profile === "staffing" ? Math.floor(scheduled * 0.4) : scheduled - (rng() < 0.3 ? 1 : 0);
     const footfallBase = isChc ? 190 + rng() * 60 : 55 + rng() * 35;
 
-    const links = spec.hub
-      ? [spec.hub]
-      : SPECS.filter((s) => s.type === "CHC" && s.id !== spec.id).map((s) => s.id);
+    const links = spec.hub ? [spec.hub] : SPECS.filter((s) => s.type === "CHC" && s.id !== spec.id).map((s) => s.id);
 
     return {
       id: spec.id,

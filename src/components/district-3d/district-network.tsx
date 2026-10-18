@@ -19,7 +19,7 @@ export interface NetworkProps {
   transfers?: Transfer[];
 }
 
-export const MAP_BACKGROUND = "#0b231d";
+const MAP_BACKGROUND = "#0b231d";
 const CITRON = "#d8e995";
 const CYAN = "#8ddcce";
 type Point = [number, number, number];
@@ -55,14 +55,25 @@ function DistrictSurface({ bounds }: { bounds: THREE.Box3 }) {
       {[1.06, 1.025, 1].map((scale, index) => (
         <group key={scale} position-y={-0.65 + index * 0.23} scale={[scale, 1, scale]}>
           <mesh rotation-x={-Math.PI / 2} receiveShadow raycast={() => null}>
-            <extrudeGeometry args={[shape, { depth: 0.16, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.12, bevelThickness: 0.06, steps: 1 }]} />
+            <extrudeGeometry
+              args={[shape, { depth: 0.16, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.12, bevelThickness: 0.06, steps: 1 }]}
+            />
             <meshStandardMaterial color={index === 2 ? "#164438" : "#102f28"} roughness={0.95} />
           </mesh>
-          <Line points={outline.map(([positionX, , positionZ]): Point => [positionX, 0.24, positionZ])} color={index === 2 ? "#458571" : "#295b4c"} lineWidth={0.8} />
+          <Line
+            points={outline.map(([positionX, , positionZ]): Point => [positionX, 0.24, positionZ])}
+            color={index === 2 ? "#458571" : "#295b4c"}
+            lineWidth={0.8}
+          />
         </group>
       ))}
       {[0.92, 0.84].map((scale) => (
-        <Line key={scale} points={outline.map(([positionX, , positionZ]): Point => [positionX * scale, 0.025, positionZ * scale])} color="#265c4c" lineWidth={0.65} />
+        <Line
+          key={scale}
+          points={outline.map(([positionX, , positionZ]): Point => [positionX * scale, 0.025, positionZ * scale])}
+          color="#265c4c"
+          lineWidth={0.65}
+        />
       ))}
     </group>
   );
@@ -97,12 +108,26 @@ function FacadeWindows({ width, height, depth, highlighted }: { width: number; h
   return (
     <instancedMesh ref={instances} args={[undefined, undefined, count]} raycast={() => null}>
       <boxGeometry args={[0.19, 0.12, 0.025]} />
-      <meshStandardMaterial color={highlighted ? CITRON : "#b4e4cd"} emissive={highlighted ? CITRON : "#72bca4"} emissiveIntensity={0.55} roughness={0.35} />
+      <meshStandardMaterial
+        color={highlighted ? CITRON : "#b4e4cd"}
+        emissive={highlighted ? CITRON : "#72bca4"}
+        emissiveIntensity={0.55}
+        roughness={0.35}
+      />
     </instancedMesh>
   );
 }
 
-function FacilityNode({ item, selected, hovered, dimmed, onSelect, onHover, animate, index }: {
+function FacilityNode({
+  item,
+  selected,
+  hovered,
+  dimmed,
+  onSelect,
+  onHover,
+  animate,
+  index,
+}: {
   item: AssessedFacility;
   selected: boolean;
   hovered: boolean;
@@ -155,16 +180,35 @@ function FacilityNode({ item, selected, hovered, dimmed, onSelect, onHover, anim
   return (
     <group
       position={[facility.position.x, 0, facility.position.z]}
-      onPointerOver={(event) => { event.stopPropagation(); onHover(facility.id, true); }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        onHover(facility.id, true);
+      }}
       onPointerOut={() => onHover(facility.id, false)}
-      onClick={(event) => { event.stopPropagation(); onSelect(selected ? null : facility.id); }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(selected ? null : facility.id);
+      }}
     >
       <RoundedBox args={[footprintWidth, 0.18, footprintDepth]} radius={0.09} smoothness={2} position-y={0.01} receiveShadow>
         <meshStandardMaterial color={highlighted ? "#355f4b" : "#1e4b3b"} roughness={0.9} />
       </RoundedBox>
-      <Line points={border} color={highlighted ? CITRON : statusColor} lineWidth={highlighted ? 2 : 1} transparent opacity={dimmed ? 0.3 : 0.8} />
+      <Line
+        points={border}
+        color={highlighted ? CITRON : statusColor}
+        lineWidth={highlighted ? 2 : 1}
+        transparent
+        opacity={dimmed ? 0.3 : 0.8}
+      />
       <group ref={building} scale={[1, animate ? 0.001 : 1, 1]}>
-        <RoundedBox args={[footprintWidth - 0.45, 0.6, footprintDepth - 0.45]} radius={0.09} smoothness={2} position-y={0.42} castShadow receiveShadow>
+        <RoundedBox
+          args={[footprintWidth - 0.45, 0.6, footprintDepth - 0.45]}
+          radius={0.09}
+          smoothness={2}
+          position-y={0.42}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial color={dimmed ? "#254d40" : "#467f69"} roughness={0.7} />
         </RoundedBox>
         <group position={[-(isHub ? 0.65 : 0.25), height / 2 + 0.72, -0.15]}>
@@ -188,7 +232,14 @@ function FacilityNode({ item, selected, hovered, dimmed, onSelect, onHover, anim
           </mesh>
         </group>
         {isHub && (
-          <RoundedBox args={[1.35, height * 0.55, 2.35]} radius={0.08} smoothness={2} position={[1.15, height * 0.275 + 0.72, 0.1]} castShadow receiveShadow>
+          <RoundedBox
+            args={[1.35, height * 0.55, 2.35]}
+            radius={0.08}
+            smoothness={2}
+            position={[1.15, height * 0.275 + 0.72, 0.1]}
+            castShadow
+            receiveShadow
+          >
             <meshStandardMaterial color={dimmed ? "#2a594b" : "#588f7b"} roughness={0.65} />
           </RoundedBox>
         )}
@@ -232,18 +283,20 @@ function Links({ facilities, selectedId }: Pick<NetworkProps, "facilities" | "se
   const edges = useMemo(() => {
     const byId = new Map(facilities.map(({ facility }) => [facility.id, facility]));
     const seen = new Set<string>();
-    return facilities.flatMap(({ facility }) => facility.links.flatMap((linkId) => {
-      const other = byId.get(linkId);
-      const key = [facility.id, linkId].sort().join("|");
-      if (!other || seen.has(key)) return [];
-      seen.add(key);
-      const points: Point[] = [
-        [facility.position.x, 0.035, facility.position.z],
-        [facility.position.x, 0.035, other.position.z],
-        [other.position.x, 0.035, other.position.z],
-      ];
-      return [{ key, ids: [facility.id, linkId], points }];
-    }));
+    return facilities.flatMap(({ facility }) =>
+      facility.links.flatMap((linkId) => {
+        const other = byId.get(linkId);
+        const key = [facility.id, linkId].sort().join("|");
+        if (!other || seen.has(key)) return [];
+        seen.add(key);
+        const points: Point[] = [
+          [facility.position.x, 0.035, facility.position.z],
+          [facility.position.x, 0.035, other.position.z],
+          [other.position.x, 0.035, other.position.z],
+        ];
+        return [{ key, ids: [facility.id, linkId], points }];
+      }),
+    );
   }, [facilities]);
 
   return edges.map((edge) => {
@@ -251,7 +304,14 @@ function Links({ facilities, selectedId }: Pick<NetworkProps, "facilities" | "se
     return (
       <group key={edge.key}>
         <Line points={edge.points} color="#0d2c25" lineWidth={highlighted ? 9 : 7} />
-        <Line points={edge.points.map(([positionX, positionY, positionZ]): Point => [positionX, positionY + 0.005, positionZ])} color={highlighted ? CITRON : "#527c69"} lineWidth={highlighted ? 1.6 : 0.7} dashed={!highlighted} dashSize={0.4} gapSize={0.45} />
+        <Line
+          points={edge.points.map(([positionX, positionY, positionZ]): Point => [positionX, positionY + 0.005, positionZ])}
+          color={highlighted ? CITRON : "#527c69"}
+          lineWidth={highlighted ? 1.6 : 0.7}
+          dashed={!highlighted}
+          dashSize={0.4}
+          gapSize={0.45}
+        />
       </group>
     );
   });
@@ -276,7 +336,16 @@ function TransferRoute({ curve, dispatched, animate }: { curve: THREE.QuadraticB
 
   return (
     <group>
-      <Line points={points} color={dispatched ? CYAN : "#f0ad32"} lineWidth={dispatched ? 2.3 : 1.8} dashed={!dispatched} dashSize={0.65} gapSize={0.45} transparent opacity={0.95} />
+      <Line
+        points={points}
+        color={dispatched ? CYAN : "#f0ad32"}
+        lineWidth={dispatched ? 2.3 : 1.8}
+        dashed={!dispatched}
+        dashSize={0.65}
+        gapSize={0.45}
+        transparent
+        opacity={0.95}
+      />
       {dispatched && (
         <mesh ref={marker}>
           <coneGeometry args={[0.2, 0.65, 4]} />
@@ -313,7 +382,12 @@ interface ControlsLike {
   update: () => void;
 }
 
-function CameraRig({ bounds, focus, animate, userControlledRef }: {
+function CameraRig({
+  bounds,
+  focus,
+  animate,
+  userControlledRef,
+}: {
   bounds: THREE.Box3;
   focus: { x: number; z: number } | null;
   animate: boolean;
@@ -339,7 +413,11 @@ function CameraRig({ bounds, focus, animate, userControlledRef }: {
         for (const positionZ of [framing.min.z, framing.max.z]) {
           const relative = new THREE.Vector3(positionX, positionY, positionZ).sub(target);
           const depth = relative.dot(direction);
-          distance = Math.max(distance, depth + Math.abs(relative.dot(right)) / (tangent * aspect), depth + Math.abs(relative.dot(up)) / tangent);
+          distance = Math.max(
+            distance,
+            depth + Math.abs(relative.dot(right)) / (tangent * aspect),
+            depth + Math.abs(relative.dot(up)) / tangent,
+          );
         }
       }
     }
@@ -353,7 +431,9 @@ function CameraRig({ bounds, focus, animate, userControlledRef }: {
     invalidate();
   }, [invalidate, userControlledRef, view]);
 
-  useLayoutEffect(() => { invalidate(); }, [animate, invalidate]);
+  useLayoutEffect(() => {
+    invalidate();
+  }, [animate, invalidate]);
 
   useFrame((state, delta) => {
     const controls = state.controls as unknown as ControlsLike | null;
@@ -373,7 +453,11 @@ function CameraRig({ bounds, focus, animate, userControlledRef }: {
       const angle = Math.sin(idleElapsed.current * 0.16) * 0.018;
       const offsetX = view.position.x - view.target.x;
       const offsetZ = view.position.z - view.target.z;
-      state.camera.position.set(view.target.x + offsetX * Math.cos(angle) - offsetZ * Math.sin(angle), view.position.y, view.target.z + offsetX * Math.sin(angle) + offsetZ * Math.cos(angle));
+      state.camera.position.set(
+        view.target.x + offsetX * Math.cos(angle) - offsetZ * Math.sin(angle),
+        view.position.y,
+        view.target.z + offsetX * Math.sin(angle) + offsetZ * Math.cos(angle),
+      );
       controls.update();
     }
   });
@@ -397,51 +481,101 @@ export function DistrictNetwork({ facilities, selectedId, onSelect, animate, lab
 
   return (
     <div className="relative size-full">
-    <Canvas
-      shadows
-      camera={{ position: [20, 48, 58], fov: 38, near: 0.5, far: 300 }}
-      dpr={[1, 1.5]}
-      frameloop={animate ? "always" : "demand"}
-      gl={{ antialias: true, powerPreference: "low-power" }}
-      onPointerMissed={() => onSelect(null)}
-    >
-      <color attach="background" args={[MAP_BACKGROUND]} />
-      <hemisphereLight args={["#d8f3e7", "#183c30", 1.7]} />
-      <directionalLight position={[-18, 32, 12]} color="#fff0cc" intensity={3.1} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={bounds.min.x - 15} shadow-camera-right={bounds.max.x + 15} shadow-camera-top={bounds.max.z + 15} shadow-camera-bottom={bounds.min.z - 15} shadow-camera-far={120} shadow-normalBias={0.06} />
-      <directionalLight position={[15, 12, -20]} color={CYAN} intensity={1.4} />
-      <DistrictSurface bounds={bounds} />
-      <Links facilities={facilities} selectedId={selectedId} />
-      <TransferRoutes facilities={facilities} transfers={transfers} animate={animate} />
-      {facilities.map((item, index) => (
-        <FacilityNode key={item.facility.id} item={item} index={index} selected={item.facility.id === selectedId} hovered={item.facility.id === hoveredId} dimmed={related !== null && !related.has(item.facility.id)} onSelect={onSelect} onHover={onHover} animate={animate} />
-      ))}
-      <LabelProjector facilities={facilities} nodes={labelNodes} />
-      <CameraRig bounds={bounds} focus={selected ? selected.facility.position : null} animate={animate} userControlledRef={userControlledRef} />
-      <OrbitControls makeDefault enablePan={false} minDistance={14} maxDistance={180} minPolarAngle={Math.PI / 7} maxPolarAngle={Math.PI / 2.6} enableDamping={animate} dampingFactor={0.08} onStart={() => { userControlledRef.current = true; }} />
-    </Canvas>
-    <div className="pointer-events-none absolute inset-0 overflow-hidden select-none">
-      {facilities.map(({ facility, assessment }) => {
-        const highlighted = facility.id === selectedId || facility.id === hoveredId;
-        const dimmed = related !== null && !related.has(facility.id);
-        const shown = highlighted || (!dimmed && facility.type === "CHC");
-        return (
-          <div
-            key={facility.id}
-            ref={(element) => {
-              if (element) labelNodes.current.set(facility.id, element);
-              else labelNodes.current.delete(facility.id);
-            }}
-            style={{ visibility: "hidden" }}
-            className={`absolute top-0 left-0 will-change-transform ${shown ? "" : "hidden"} ${highlighted ? "z-10" : ""}`}
-          >
-            <div className={highlighted ? "max-w-44 rounded border border-[#d8e995]/50 bg-[#0b231d]/95 px-3 py-2 text-center text-white" : "max-w-36 border-b border-white/30 bg-[#0b231d]/90 px-2 py-1 text-center text-white/85"}>
-              <p className="text-xs leading-snug font-medium">{facility.name}</p>
-              {highlighted && <p className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-white/80"><span className="size-1.5 shrink-0 rounded-full" style={{ background: SEVERITY_META[assessment.status].hex }} />{labels[assessment.status]}</p>}
+      <Canvas
+        shadows
+        camera={{ position: [20, 48, 58], fov: 38, near: 0.5, far: 300 }}
+        dpr={[1, 1.5]}
+        frameloop={animate ? "always" : "demand"}
+        gl={{ antialias: true, powerPreference: "low-power" }}
+        onPointerMissed={() => onSelect(null)}
+      >
+        <color attach="background" args={[MAP_BACKGROUND]} />
+        <hemisphereLight args={["#d8f3e7", "#183c30", 1.7]} />
+        <directionalLight
+          position={[-18, 32, 12]}
+          color="#fff0cc"
+          intensity={3.1}
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-camera-left={bounds.min.x - 15}
+          shadow-camera-right={bounds.max.x + 15}
+          shadow-camera-top={bounds.max.z + 15}
+          shadow-camera-bottom={bounds.min.z - 15}
+          shadow-camera-far={120}
+          shadow-normalBias={0.06}
+        />
+        <directionalLight position={[15, 12, -20]} color={CYAN} intensity={1.4} />
+        <DistrictSurface bounds={bounds} />
+        <Links facilities={facilities} selectedId={selectedId} />
+        <TransferRoutes facilities={facilities} transfers={transfers} animate={animate} />
+        {facilities.map((item, index) => (
+          <FacilityNode
+            key={item.facility.id}
+            item={item}
+            index={index}
+            selected={item.facility.id === selectedId}
+            hovered={item.facility.id === hoveredId}
+            dimmed={related !== null && !related.has(item.facility.id)}
+            onSelect={onSelect}
+            onHover={onHover}
+            animate={animate}
+          />
+        ))}
+        <LabelProjector facilities={facilities} nodes={labelNodes} />
+        <CameraRig
+          bounds={bounds}
+          focus={selected ? selected.facility.position : null}
+          animate={animate}
+          userControlledRef={userControlledRef}
+        />
+        <OrbitControls
+          makeDefault
+          enablePan={false}
+          minDistance={14}
+          maxDistance={180}
+          minPolarAngle={Math.PI / 7}
+          maxPolarAngle={Math.PI / 2.6}
+          enableDamping={animate}
+          dampingFactor={0.08}
+          onStart={() => {
+            userControlledRef.current = true;
+          }}
+        />
+      </Canvas>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+        {facilities.map(({ facility, assessment }) => {
+          const highlighted = facility.id === selectedId || facility.id === hoveredId;
+          const dimmed = related !== null && !related.has(facility.id);
+          const shown = highlighted || (!dimmed && facility.type === "CHC");
+          return (
+            <div
+              key={facility.id}
+              ref={(element) => {
+                if (element) labelNodes.current.set(facility.id, element);
+                else labelNodes.current.delete(facility.id);
+              }}
+              style={{ visibility: "hidden" }}
+              className={`absolute top-0 left-0 will-change-transform ${shown ? "" : "hidden"} ${highlighted ? "z-10" : ""}`}
+            >
+              <div
+                className={
+                  highlighted
+                    ? "max-w-44 rounded border border-[#d8e995]/50 bg-[#0b231d]/95 px-3 py-2 text-center text-white"
+                    : "max-w-36 border-b border-white/30 bg-[#0b231d]/90 px-2 py-1 text-center text-white/85"
+                }
+              >
+                <p className="text-xs leading-snug font-medium">{facility.name}</p>
+                {highlighted && (
+                  <p className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-white/80">
+                    <span className="size-1.5 shrink-0 rounded-full" style={{ background: SEVERITY_META[assessment.status].hex }} />
+                    {labels[assessment.status]}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

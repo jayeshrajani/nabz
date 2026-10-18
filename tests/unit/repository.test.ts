@@ -29,7 +29,11 @@ describe("memory repository updates", () => {
 
   it("keeps sessions isolated", async () => {
     const repo = await setup();
-    await repo.applyUpdate("s1", { facilityId: FACILITY, actorUid: "u", update: { kind: "stock", medicineId: medicine.id, movement: "receive", quantity: 100 } });
+    await repo.applyUpdate("s1", {
+      facilityId: FACILITY,
+      actorUid: "u",
+      update: { kind: "stock", medicineId: medicine.id, movement: "receive", quantity: 100 },
+    });
     expect(await stockOf(repo, "s2", medicine.id)).toBe(medicine.quantity);
   });
 
@@ -50,9 +54,19 @@ describe("memory repository updates", () => {
 
   it("rejects reuse of an idempotency key for a different request", async () => {
     const repo = await setup();
-    await repo.applyUpdate("s1", { facilityId: FACILITY, actorUid: "u", idempotencyKey: "key-abcdefgh", update: { kind: "footfall", today: 5 } });
+    await repo.applyUpdate("s1", {
+      facilityId: FACILITY,
+      actorUid: "u",
+      idempotencyKey: "key-abcdefgh",
+      update: { kind: "footfall", today: 5 },
+    });
     await expect(
-      repo.applyUpdate("s1", { facilityId: FACILITY, actorUid: "u", idempotencyKey: "key-abcdefgh", update: { kind: "beds", occupied: 1, total: 6 } }),
+      repo.applyUpdate("s1", {
+        facilityId: FACILITY,
+        actorUid: "u",
+        idempotencyKey: "key-abcdefgh",
+        update: { kind: "beds", occupied: 1, total: 6 },
+      }),
     ).rejects.toMatchObject({ code: "CONFLICT" });
   });
 
@@ -60,7 +74,11 @@ describe("memory repository updates", () => {
     const repo = await setup();
     const quantity = Math.ceil(medicine.quantity / 3);
     const attempts = Array.from({ length: 6 }, () =>
-      repo.applyUpdate("s1", { facilityId: FACILITY, actorUid: "u", update: { kind: "stock", medicineId: medicine.id, movement: "issue", quantity } }),
+      repo.applyUpdate("s1", {
+        facilityId: FACILITY,
+        actorUid: "u",
+        update: { kind: "stock", medicineId: medicine.id, movement: "issue", quantity },
+      }),
     );
     const results = await Promise.allSettled(attempts);
     const succeeded = results.filter((r) => r.status === "fulfilled").length;
@@ -71,6 +89,8 @@ describe("memory repository updates", () => {
 
   it("returns NOT_FOUND for unknown centres", async () => {
     const repo = await setup();
-    await expect(repo.applyUpdate("s1", { facilityId: "nope", actorUid: "u", update: { kind: "footfall", today: 1 } })).rejects.toBeInstanceOf(AppError);
+    await expect(
+      repo.applyUpdate("s1", { facilityId: "nope", actorUid: "u", update: { kind: "footfall", today: 1 } }),
+    ).rejects.toBeInstanceOf(AppError);
   });
 });

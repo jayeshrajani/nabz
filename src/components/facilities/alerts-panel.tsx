@@ -15,7 +15,13 @@ export function AlertsPanel({ facilities, onSelect }: { facilities: AssessedFaci
     .sort((a, b) => RANK[a.assessment.status] - RANK[b.assessment.status] || b.assessment.signals.length - a.assessment.signals.length);
 
   return (
-    <motion.section aria-labelledby="attention-heading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="card flex h-full flex-col p-6 text-ink">
+    <motion.section
+      aria-labelledby="attention-heading"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="card flex h-full flex-col p-6 text-ink"
+    >
       <h2 id="attention-heading" className="font-display text-xl font-semibold tracking-tight">
         {t("attention.title")}
       </h2>

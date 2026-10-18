@@ -34,7 +34,9 @@ describe("generateWithFallback", () => {
   });
 
   it("falls back to Cerebras on timeout", async () => {
-    const gemini = provider("gemini", () => withTimeout(10, (signal) => new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("aborted"))))));
+    const gemini = provider("gemini", () =>
+      withTimeout(10, (signal) => new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("aborted"))))),
+    );
     const cerebras = provider("cerebras", async () => ({ answer: "fallback" }));
     const r = await generateWithFallback([gemini, cerebras], request, schema);
     expect(r).toMatchObject({ ok: true, provider: "cerebras" });
@@ -59,7 +61,13 @@ describe("generateWithFallback", () => {
       throw new ProviderError("down", "unavailable");
     });
     const r = await generateWithFallback([gemini, cerebras], request, schema);
-    expect(r).toEqual({ ok: false, attempts: [{ provider: "gemini", category: "rate_limit" }, { provider: "cerebras", category: "unavailable" }] });
+    expect(r).toEqual({
+      ok: false,
+      attempts: [
+        { provider: "gemini", category: "rate_limit" },
+        { provider: "cerebras", category: "unavailable" },
+      ],
+    });
   });
 
   it("does not retry after a non-retryable rejection", async () => {

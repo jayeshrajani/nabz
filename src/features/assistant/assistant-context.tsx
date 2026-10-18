@@ -59,7 +59,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setOpen(true);
   }, []);
 
-  return <AssistantContext.Provider value={{ open, setOpen, draft, setDraft, turns, pending, send, ask }}>{children}</AssistantContext.Provider>;
+  return (
+    <AssistantContext.Provider value={{ open, setOpen, draft, setDraft, turns, pending, send, ask }}>{children}</AssistantContext.Provider>
+  );
 }
 
 export function useAssistant(): AssistantUi {

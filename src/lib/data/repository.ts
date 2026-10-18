@@ -1,5 +1,12 @@
 import { applyFacilityUpdate, type AuditEvent, type FacilityUpdate, type UpdateResult } from "@/domain/operations";
-import { applyTransferAction, createTransfer, type Transfer, type TransferAction, type TransferRequest, type TransferResult } from "@/domain/redistribution";
+import {
+  applyTransferAction,
+  createTransfer,
+  type Transfer,
+  type TransferAction,
+  type TransferRequest,
+  type TransferResult,
+} from "@/domain/redistribution";
 import { buildSeedDistrict, buildSeedFacilities } from "@/domain/seed";
 import type { District, Facility } from "@/domain/schemas";
 import { AppError } from "@/lib/errors/app-error";
@@ -80,14 +87,27 @@ export function checkReplay(record: IdempotencyRecord, target: string, kind: str
 }
 
 export function runUpdate(facility: Facility, command: UpdateCommand): UpdateResult {
-  return applyFacilityUpdate(facility, command.update, { actorUid: command.actorUid, at: new Date().toISOString(), id: crypto.randomUUID() });
+  return applyFacilityUpdate(facility, command.update, {
+    actorUid: command.actorUid,
+    at: new Date().toISOString(),
+    id: crypto.randomUUID(),
+  });
 }
 
 export function newTransfer(command: CreateTransferCommand, donor: Facility, receiver: Facility): Transfer {
-  return createTransfer(command.request, donor, receiver, { id: crypto.randomUUID(), actorUid: command.actorUid, at: new Date().toISOString() });
+  return createTransfer(command.request, donor, receiver, {
+    id: crypto.randomUUID(),
+    actorUid: command.actorUid,
+    at: new Date().toISOString(),
+  });
 }
 
-export function runTransferAction(transfer: Transfer, donor: Facility, receiver: Facility, command: AdvanceTransferCommand): TransferResult {
+export function runTransferAction(
+  transfer: Transfer,
+  donor: Facility,
+  receiver: Facility,
+  command: AdvanceTransferCommand,
+): TransferResult {
   return applyTransferAction(transfer, donor, receiver, command.action, { actorUid: command.actorUid, at: new Date().toISOString() });
 }
 
@@ -148,7 +168,9 @@ export function createMemoryRepository(): DistrictRepository {
 
     async getSnapshot(sessionId) {
       const s = sessions.get(sessionId);
-      return s ? structuredClone({ district: s.district, facilities: s.facilities, transfers: s.transfers.slice(0, TRANSFER_LIMIT) }) : null;
+      return s
+        ? structuredClone({ district: s.district, facilities: s.facilities, transfers: s.transfers.slice(0, TRANSFER_LIMIT) })
+        : null;
     },
 
     async getFacility(sessionId, facilityId) {
@@ -169,7 +191,13 @@ export function createMemoryRepository(): DistrictRepository {
       const result = runUpdate(current, command);
       replace(s, result.facility);
       log(s, result.audit);
-      if (command.idempotencyKey) s.idempotency.set(command.idempotencyKey, { target: command.facilityId, kind: command.update.kind, auditId: result.audit.id, audit: result.audit });
+      if (command.idempotencyKey)
+        s.idempotency.set(command.idempotencyKey, {
+          target: command.facilityId,
+          kind: command.update.kind,
+          auditId: result.audit.id,
+          audit: result.audit,
+        });
       return structuredClone({ facility: result.facility, audit: result.audit, replayed: false });
     },
 
@@ -187,7 +215,8 @@ export function createMemoryRepository(): DistrictRepository {
       const text = describeTransfer(transfer, donor, receiver);
       log(s, transferAudit(transfer, donor.id, text.donor, command.actorUid));
       log(s, transferAudit(transfer, receiver.id, text.receiver, command.actorUid));
-      if (command.idempotencyKey) s.idempotency.set(command.idempotencyKey, { target: transfer.id, kind: "transfer.create", auditId: transfer.id });
+      if (command.idempotencyKey)
+        s.idempotency.set(command.idempotencyKey, { target: transfer.id, kind: "transfer.create", auditId: transfer.id });
       return structuredClone({ transfer, replayed: false });
     },
 
@@ -208,7 +237,8 @@ export function createMemoryRepository(): DistrictRepository {
       const text = describeTransfer(result.transfer, result.donor, result.receiver);
       log(s, transferAudit(result.transfer, result.donor.id, text.donor, command.actorUid));
       log(s, transferAudit(result.transfer, result.receiver.id, text.receiver, command.actorUid));
-      if (command.idempotencyKey) s.idempotency.set(command.idempotencyKey, { target: command.transferId, kind, auditId: result.transfer.id });
+      if (command.idempotencyKey)
+        s.idempotency.set(command.idempotencyKey, { target: command.transferId, kind, auditId: result.transfer.id });
       return structuredClone({ transfer: result.transfer, replayed: false });
     },
   };

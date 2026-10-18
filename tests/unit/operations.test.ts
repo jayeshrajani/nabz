@@ -21,7 +21,9 @@ describe("applyFacilityUpdate", () => {
     const r = applyFacilityUpdate(f, { kind: "stock", medicineId: m.id, movement: "issue", quantity: 5 }, ctx);
     expect(r.facility.medicines[0]!.quantity).toBe(m.quantity - 5);
     expect(r.facility.medicines[0]!.dailyConsumption.at(-1)).toBe(m.dailyConsumption.at(-1)! + 5);
-    expect(() => applyFacilityUpdate(f, { kind: "stock", medicineId: m.id, movement: "issue", quantity: m.quantity + 1 }, ctx)).toThrow(DomainRuleError);
+    expect(() => applyFacilityUpdate(f, { kind: "stock", medicineId: m.id, movement: "issue", quantity: m.quantity + 1 }, ctx)).toThrow(
+      DomainRuleError,
+    );
   });
 
   it("sets an absolute count", () => {
@@ -32,8 +34,12 @@ describe("applyFacilityUpdate", () => {
   });
 
   it("rejects unknown medicines and tests", () => {
-    expect(() => applyFacilityUpdate(base(), { kind: "stock", medicineId: "nope", movement: "receive", quantity: 1 }, ctx)).toThrow(DomainRuleError);
-    expect(() => applyFacilityUpdate(base(), { kind: "diagnostic", testId: "nope", available: true, kitsRemaining: 1 }, ctx)).toThrow(DomainRuleError);
+    expect(() => applyFacilityUpdate(base(), { kind: "stock", medicineId: "nope", movement: "receive", quantity: 1 }, ctx)).toThrow(
+      DomainRuleError,
+    );
+    expect(() => applyFacilityUpdate(base(), { kind: "diagnostic", testId: "nope", available: true, kitsRemaining: 1 }, ctx)).toThrow(
+      DomainRuleError,
+    );
   });
 
   it("enforces bed and attendance invariants", () => {

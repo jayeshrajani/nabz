@@ -99,7 +99,8 @@ describe("POST /api/facilities/[id]/updates", () => {
     const headers = { "idempotency-key": "same-key-0001" };
     const first = await (await routes.updates.POST(post(A, body, headers), ctx(FACILITY))).json();
     const second = await (await routes.updates.POST(post(A, body, headers), ctx(FACILITY))).json();
-    const qty = (d: { facility: { medicines: { id: string; quantity: number }[] } }) => d.facility.medicines.find((m) => m.id === "ors-sachet")!.quantity;
+    const qty = (d: { facility: { medicines: { id: string; quantity: number }[] } }) =>
+      d.facility.medicines.find((m) => m.id === "ors-sachet")!.quantity;
     expect(second.data.replayed).toBe(true);
     expect(qty(second.data.detail)).toBe(qty(first.data.detail));
   });
@@ -114,7 +115,8 @@ describe("POST /api/facilities/[id]/updates", () => {
     await routes.session.POST(new Request("http://test", { method: "POST", headers: auth(C) }));
     const { RATE_LIMITS } = await import("@/lib/api/guard");
     const statuses: number[] = [];
-    for (let i = 0; i <= RATE_LIMITS.write; i++) statuses.push((await routes.updates.POST(post(C, { kind: "footfall", today: 1 }), ctx(FACILITY))).status);
+    for (let i = 0; i <= RATE_LIMITS.write; i++)
+      statuses.push((await routes.updates.POST(post(C, { kind: "footfall", today: 1 }), ctx(FACILITY))).status);
     expect(statuses.at(-1)).toBe(429);
     expect(statuses.slice(0, -1).every((s) => s === 200)).toBe(true);
   });

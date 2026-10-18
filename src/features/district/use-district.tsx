@@ -5,10 +5,7 @@ import type { DistrictView } from "@/domain/district";
 import { apiRequest } from "@/lib/api/client";
 import { ensureSession } from "@/lib/api/session";
 
-export type DistrictState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; view: DistrictView };
+export type DistrictState = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; view: DistrictView };
 
 interface DistrictContextValue {
   state: DistrictState;
@@ -33,7 +30,8 @@ export function DistrictProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     loadDistrict().then(
       (view) => !cancelled && setState({ status: "ready", view }),
-      (error: unknown) => !cancelled && setState({ status: "error", message: error instanceof Error ? error.message : "Unable to load district data." }),
+      (error: unknown) =>
+        !cancelled && setState({ status: "error", message: error instanceof Error ? error.message : "Unable to load district data." }),
     );
     return () => {
       cancelled = true;

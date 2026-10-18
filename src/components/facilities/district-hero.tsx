@@ -12,7 +12,10 @@ function pressures(view: DistrictView): RiskDomain[] {
   const counts = new Map<RiskDomain, number>();
   for (const { assessment } of view.facilities)
     for (const s of assessment.signals) counts.set(s.domain, (counts.get(s.domain) ?? 0) + (s.severity === "critical" ? 3 : 1));
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([d]) => d);
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([d]) => d);
 }
 
 export function DistrictHero({ view, className }: { view: DistrictView; className?: string }) {
@@ -35,7 +38,10 @@ export function DistrictHero({ view, className }: { view: DistrictView; classNam
   ];
 
   return (
-    <section aria-labelledby="hero-heading" className={`relative isolate overflow-hidden rounded-[var(--radius-hero)] bg-forest text-white ${className ?? ""}`}>
+    <section
+      aria-labelledby="hero-heading"
+      className={`relative isolate overflow-hidden rounded-[var(--radius-hero)] bg-forest text-white ${className ?? ""}`}
+    >
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <motion.div
           className="absolute -top-32 -left-24 size-[420px] rounded-full bg-mint/25 blur-3xl"
@@ -61,7 +67,9 @@ export function DistrictHero({ view, className }: { view: DistrictView; classNam
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="mt-4 max-w-xl font-display text-4xl leading-[1.08] font-semibold tracking-tight sm:text-5xl"
             >
-              {flagged === 0 ? t("hero.allGood", { district: view.district.name }) : t("hero.needHand", { count: number(flagged), total: number(summary.facilities) })}
+              {flagged === 0
+                ? t("hero.allGood", { district: view.district.name })
+                : t("hero.needHand", { count: number(flagged), total: number(summary.facilities) })}
             </motion.h1>
             {top.length > 0 && (
               <p className="mt-4 max-w-md text-base leading-relaxed text-white/70">

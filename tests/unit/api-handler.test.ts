@@ -40,6 +40,10 @@ describe("apiHandler", () => {
     const body = await res.json();
     expect(res.status).toBe(500);
     expect(body.error).toEqual({ code: "INTERNAL", message: "An unexpected error occurred." });
-    expect(JSON.parse(errorLog.mock.calls[0]![0] as string)).toMatchObject({ severity: "ERROR", operation: "op", errorCategory: "INTERNAL" });
+    expect(JSON.parse(errorLog.mock.calls[0]![0] as string)).toMatchObject({
+      severity: "ERROR",
+      operation: "op",
+      errorCategory: "INTERNAL",
+    });
   });
 });

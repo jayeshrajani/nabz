@@ -2,7 +2,7 @@ export type Role = "district_admin" | "facility_operator" | "viewer" | "demo_use
 
 export type Capability = "district:read" | "facility:write" | "transfer:approve" | "demo:reset";
 
-export const ROLE_CAPABILITIES: Record<Role, readonly Capability[]> = {
+const ROLE_CAPABILITIES: Record<Role, readonly Capability[]> = {
   district_admin: ["district:read", "facility:write", "transfer:approve"],
   facility_operator: ["district:read", "facility:write"],
   viewer: ["district:read"],

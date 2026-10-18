@@ -41,7 +41,15 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   );
 }
 
-export function FootfallChart({ history, endDate, forecast }: { history: readonly number[]; endDate: string; forecast: SeriesForecast | null }) {
+export function FootfallChart({
+  history,
+  endDate,
+  forecast,
+}: {
+  history: readonly number[];
+  endDate: string;
+  forecast: SeriesForecast | null;
+}) {
   const data = buildPoints(history, endDate, forecast);
   return (
     <div className="h-56 w-full" role="img" aria-label={`Daily patients for the last ${history.length} days with a 7-day outlook`}>

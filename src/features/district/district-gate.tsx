@@ -25,7 +25,11 @@ export function DistrictGate({ children }: { children: (view: Extract<DistrictSt
       <div role="alert" className="mx-auto mt-16 max-w-md rounded-[var(--radius-hero)] bg-forest p-10 text-center text-white">
         <h1 className="font-display text-2xl font-semibold">{t("common.errorTitle")}</h1>
         <p className="mt-2 text-sm text-white/70">{state.message}</p>
-        <button type="button" onClick={reload} className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-mint px-5 text-sm font-medium text-forest hover:bg-white">
+        <button
+          type="button"
+          onClick={reload}
+          className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-mint px-5 text-sm font-medium text-forest hover:bg-white"
+        >
           <RefreshCw aria-hidden className="size-4" /> {t("common.retry")}
         </button>
       </div>

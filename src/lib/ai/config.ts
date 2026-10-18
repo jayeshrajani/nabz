@@ -3,7 +3,7 @@ import { createCerebrasProvider } from "./cerebras";
 import { createGeminiProvider } from "./gemini";
 import type { AIProvider } from "./types";
 
-export const DEFAULT_TIMEOUT_MS = 12_000;
+const DEFAULT_TIMEOUT_MS = 12_000;
 
 /** Builds the provider chain from env. A provider needs both a key and an explicit model id; nothing is hardcoded. */
 export function configuredProviders(env: NodeJS.ProcessEnv = process.env): AIProvider[] {

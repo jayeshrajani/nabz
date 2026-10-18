@@ -127,7 +127,8 @@ export const en = {
   "activity.empty": "Nothing logged yet. Every update you make here is recorded with who made it and when.",
 
   "transfers.title": "Move stock where it's needed",
-  "transfers.subtitle": "nabz pairs centres about to run out with centres that can safely spare stock. Nothing moves until a person approves it.",
+  "transfers.subtitle":
+    "nabz pairs centres about to run out with centres that can safely spare stock. Nothing moves until a person approves it.",
   "transfers.suggestions": "Suggested moves",
   "transfers.none": "No centre needs a top-up right now.",
   "transfers.active": "In progress",
@@ -142,7 +143,8 @@ export const en = {
   "transfers.alternatives": "{n} other centres could also help.",
   "transfers.propose": "Propose transfer",
   "transfers.ask": "Ask nabz why",
-  "transfers.note": "Approving holds the stock at the donor. Stock only leaves when dispatch is confirmed, and only arrives when receipt is confirmed.",
+  "transfers.note":
+    "Approving holds the stock at the donor. Stock only leaves when dispatch is confirmed, and only arrives when receipt is confirmed.",
   "transfer.status.proposed": "Proposed",
   "transfer.status.approved": "Approved, stock held",
   "transfer.status.dispatched": "On the way",

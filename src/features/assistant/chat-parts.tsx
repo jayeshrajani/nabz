@@ -22,7 +22,13 @@ export function ChatThread({ tone = "light", className }: { tone?: Tone; classNa
     <div className={cn("space-y-3", className)} aria-live="polite">
       {turns.map((turn, i) =>
         turn.role === "user" ? (
-          <p key={i} className={cn("ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md px-4 py-2 text-sm", dark ? "bg-mint text-forest" : "bg-ink text-white")}>
+          <p
+            key={i}
+            className={cn(
+              "ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md px-4 py-2 text-sm",
+              dark ? "bg-mint text-forest" : "bg-ink text-white",
+            )}
+          >
             {turn.text}
           </p>
         ) : turn.role === "error" ? (
@@ -30,7 +36,13 @@ export function ChatThread({ tone = "light", className }: { tone?: Tone; classNa
             {turn.text}
           </p>
         ) : (
-          <div key={i} className={cn("max-w-[94%] space-y-2.5 rounded-2xl rounded-bl-md p-4", dark ? "bg-white/[0.07] text-white" : "border border-line bg-surface")}>
+          <div
+            key={i}
+            className={cn(
+              "max-w-[94%] space-y-2.5 rounded-2xl rounded-bl-md p-4",
+              dark ? "bg-white/[0.07] text-white" : "border border-line bg-surface",
+            )}
+          >
             <p className="text-sm leading-relaxed">{turn.reply.answer}</p>
             {turn.reply.facts.length > 0 && (
               <ul className="space-y-1.5">
@@ -51,7 +63,9 @@ export function ChatThread({ tone = "light", className }: { tone?: Tone; classNa
             )}
             <p className={cn("flex items-center gap-1.5 pt-1 text-[11px]", dark ? "text-white/40" : "text-ink-subtle")}>
               <Bot aria-hidden className="size-3.5" />
-              {turn.reply.source === "ai" ? t("assistant.byAi", { provider: turn.reply.provider === "cerebras" ? "Cerebras" : "Gemini" }) : t("assistant.computed")}
+              {turn.reply.source === "ai"
+                ? t("assistant.byAi", { provider: turn.reply.provider === "cerebras" ? "Cerebras" : "Gemini" })
+                : t("assistant.computed")}
             </p>
           </div>
         ),
@@ -66,7 +80,15 @@ export function ChatThread({ tone = "light", className }: { tone?: Tone; classNa
   );
 }
 
-export function ChatComposer({ tone = "light", inputRef, id }: { tone?: Tone; inputRef?: RefObject<HTMLTextAreaElement | null>; id: string }) {
+export function ChatComposer({
+  tone = "light",
+  inputRef,
+  id,
+}: {
+  tone?: Tone;
+  inputRef?: RefObject<HTMLTextAreaElement | null>;
+  id: string;
+}) {
   const { draft, setDraft, send, pending } = useAssistant();
   const { t } = useI18n();
   const dark = tone === "dark";
@@ -81,7 +103,12 @@ export function ChatComposer({ tone = "light", inputRef, id }: { tone?: Tone; in
       <label htmlFor={id} className="sr-only">
         {t("assistant.placeholder")}
       </label>
-      <div className={cn("flex items-end gap-2 rounded-3xl border p-1.5", dark ? "border-white/15 bg-white/[0.06] focus-within:border-mint/60" : "border-line bg-paper focus-within:border-brand")}>
+      <div
+        className={cn(
+          "flex items-end gap-2 rounded-3xl border p-1.5",
+          dark ? "border-white/15 bg-white/[0.06] focus-within:border-mint/60" : "border-line bg-paper focus-within:border-brand",
+        )}
+      >
         <textarea
           id={id}
           ref={inputRef}
@@ -96,13 +123,19 @@ export function ChatComposer({ tone = "light", inputRef, id }: { tone?: Tone; in
             }
           }}
           placeholder={t("assistant.placeholder")}
-          className={cn("max-h-28 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none", dark ? "text-white placeholder:text-white/40" : "placeholder:text-ink-subtle")}
+          className={cn(
+            "max-h-28 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none",
+            dark ? "text-white placeholder:text-white/40" : "placeholder:text-ink-subtle",
+          )}
         />
         <button
           type="submit"
           aria-label={t("assistant.send")}
           disabled={pending || !draft.trim()}
-          className={cn("grid size-10 shrink-0 place-items-center rounded-full transition-opacity disabled:opacity-40", dark ? "bg-mint text-forest" : "bg-forest text-mint")}
+          className={cn(
+            "grid size-10 shrink-0 place-items-center rounded-full transition-opacity disabled:opacity-40",
+            dark ? "bg-mint text-forest" : "bg-forest text-mint",
+          )}
         >
           <ArrowUp aria-hidden className="size-5" />
         </button>

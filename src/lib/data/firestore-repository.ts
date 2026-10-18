@@ -114,7 +114,8 @@ export function createFirestoreRepository(db: Firestore): DistrictRepository {
         tx.set(ref, result.facility);
         writeAudit(tx, sessionId, result.audit);
         if (result.movement) tx.set(ref.collection("movements").doc(result.movement.id), result.movement);
-        if (iref) tx.set(iref, { target: command.facilityId, kind: command.update.kind, auditId: result.audit.id } satisfies IdempotencyRecord);
+        if (iref)
+          tx.set(iref, { target: command.facilityId, kind: command.update.kind, auditId: result.audit.id } satisfies IdempotencyRecord);
         return { facility: result.facility, audit: result.audit, replayed: false };
       });
     },

@@ -97,12 +97,29 @@ export function assessMedicine(m: MedicineStock): { coverage: MedicineCoverage; 
   if (cover === null) {
     return {
       coverage,
-      signal: { domain: "medicine", severity: "warning", ref: m.id, code: "medicine.noHistory", params: { name: m.name }, message: `${m.name}: not enough usage history yet` },
+      signal: {
+        domain: "medicine",
+        severity: "warning",
+        ref: m.id,
+        code: "medicine.noHistory",
+        params: { name: m.name },
+        message: `${m.name}: not enough usage history yet`,
+      },
     };
   }
   const days = Number.isFinite(cover) ? Math.max(0, Math.round(cover)) : -1;
   if (available === 0) {
-    return { coverage, signal: { domain: "medicine", severity: "critical", ref: m.id, code: "medicine.out", params: { name: m.name }, message: `${m.name} is out of stock` } };
+    return {
+      coverage,
+      signal: {
+        domain: "medicine",
+        severity: "critical",
+        ref: m.id,
+        code: "medicine.out",
+        params: { name: m.name },
+        message: `${m.name} is out of stock`,
+      },
+    };
   }
   if (cover < m.leadTimeDays) {
     return {
@@ -120,7 +137,14 @@ export function assessMedicine(m: MedicineStock): { coverage: MedicineCoverage; 
   if (available <= m.reorderLevel || cover < m.leadTimeDays * THRESHOLDS.coverWarningFactor) {
     return {
       coverage,
-      signal: { domain: "medicine", severity: "warning", ref: m.id, code: "medicine.low", params: { name: m.name, days }, message: `${m.name} is running low, about ${formatDays(cover)} left` },
+      signal: {
+        domain: "medicine",
+        severity: "warning",
+        ref: m.id,
+        code: "medicine.low",
+        params: { name: m.name, days },
+        message: `${m.name} is running low, about ${formatDays(cover)} left`,
+      },
     };
   }
   return { coverage, signal: null };
@@ -143,27 +167,60 @@ export function assessFacility(f: Facility): FacilityAssessment {
       signals.push(
         free === 0
           ? { domain: "beds", severity: "critical", code: "beds.none", params: {}, message: "No beds free" }
-          : { domain: "beds", severity: "critical", code: "beds.nearlyFull", params: { free, total: f.beds.total }, message: `Beds nearly full, ${free} of ${f.beds.total} free` },
+          : {
+              domain: "beds",
+              severity: "critical",
+              code: "beds.nearlyFull",
+              params: { free, total: f.beds.total },
+              message: `Beds nearly full, ${free} of ${f.beds.total} free`,
+            },
       );
     } else if (bedOccupancy >= THRESHOLDS.bedOccupancyWarning) {
-      signals.push({ domain: "beds", severity: "warning", code: "beds.filling", params: { free, total: f.beds.total }, message: `Beds filling up, ${free} of ${f.beds.total} free` });
+      signals.push({
+        domain: "beds",
+        severity: "warning",
+        code: "beds.filling",
+        params: { free, total: f.beds.total },
+        message: `Beds filling up, ${free} of ${f.beds.total} free`,
+      });
     }
   }
 
   const attendanceRate = f.doctors.scheduled > 0 ? f.doctors.present / f.doctors.scheduled : null;
   if (attendanceRate !== null) {
     const gap = f.doctors.scheduled - f.doctors.present;
-    const severity = attendanceRate < THRESHOLDS.attendanceCritical ? "critical" : attendanceRate < THRESHOLDS.attendanceWarning ? "warning" : null;
+    const severity =
+      attendanceRate < THRESHOLDS.attendanceCritical ? "critical" : attendanceRate < THRESHOLDS.attendanceWarning ? "warning" : null;
     if (severity) {
-      signals.push({ domain: "staffing", severity, code: "staffing.absent", params: { gap, scheduled: f.doctors.scheduled }, message: `${gap} of ${f.doctors.scheduled} doctors absent today` });
+      signals.push({
+        domain: "staffing",
+        severity,
+        code: "staffing.absent",
+        params: { gap, scheduled: f.doctors.scheduled },
+        message: `${gap} of ${f.doctors.scheduled} doctors absent today`,
+      });
     }
   }
 
   for (const t of f.diagnostics) {
     if (!t.available || t.kitsRemaining === 0) {
-      signals.push({ domain: "diagnostics", severity: "critical", ref: t.id, code: "diagnostics.unavailable", params: { name: t.name }, message: `${t.name} test unavailable` });
+      signals.push({
+        domain: "diagnostics",
+        severity: "critical",
+        ref: t.id,
+        code: "diagnostics.unavailable",
+        params: { name: t.name },
+        message: `${t.name} test unavailable`,
+      });
     } else if (t.dailyUsage > 0 && t.kitsRemaining / t.dailyUsage < THRESHOLDS.diagnosticKitDaysWarning) {
-      signals.push({ domain: "diagnostics", severity: "warning", ref: t.id, code: "diagnostics.low", params: { name: t.name }, message: `${t.name} kits running low` });
+      signals.push({
+        domain: "diagnostics",
+        severity: "warning",
+        ref: t.id,
+        code: "diagnostics.low",
+        params: { name: t.name },
+        message: `${t.name} kits running low`,
+      });
     }
   }
 
@@ -171,14 +228,17 @@ export function assessFacility(f: Facility): FacilityAssessment {
   const usual = movingAverage(f.footfall.slice(0, -1));
   if (footfallToday !== null && usual !== null && usual > 0 && footfallToday >= usual * THRESHOLDS.footfallSurgeRatio) {
     const typical = Math.round(usual);
-    signals.push({ domain: "footfall", severity: "warning", code: "footfall.surge", params: { today: footfallToday, usual: typical }, message: `Busier than usual, ${footfallToday} patients against about ${typical}` });
+    signals.push({
+      domain: "footfall",
+      severity: "warning",
+      code: "footfall.surge",
+      params: { today: footfallToday, usual: typical },
+      message: `Busier than usual, ${footfallToday} patients against about ${typical}`,
+    });
   }
 
   signals.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]);
-  const status = signals.reduce<Severity>(
-    (worst, s) => (SEVERITY_RANK[s.severity] > SEVERITY_RANK[worst] ? s.severity : worst),
-    "healthy",
-  );
+  const status = signals.reduce<Severity>((worst, s) => (SEVERITY_RANK[s.severity] > SEVERITY_RANK[worst] ? s.severity : worst), "healthy");
 
   return {
     status,
@@ -191,7 +251,7 @@ export function assessFacility(f: Facility): FacilityAssessment {
   };
 }
 
-export function formatDays(days: number): string {
+function formatDays(days: number): string {
   if (!Number.isFinite(days)) return "no recent use";
   if (days < 1) return "under a day";
   const rounded = Math.round(days);

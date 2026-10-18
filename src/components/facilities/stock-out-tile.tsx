@@ -55,7 +55,10 @@ function Countdown({ r }: { r: RunOut }) {
       </p>
       <div className="mt-3">
         {r.transferQuantity ? (
-          <Link href="/transfers" className="inline-flex items-center gap-1.5 rounded-full bg-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-forest-2">
+          <Link
+            href="/transfers"
+            className="inline-flex items-center gap-1.5 rounded-full bg-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-forest-2"
+          >
             <Truck aria-hidden className="size-3.5 text-mint" /> {t("runout.transfer", { qty: number(r.transferQuantity) })}
             <ArrowRight aria-hidden className="size-3" />
           </Link>
@@ -85,14 +88,24 @@ function Runway({ r, horizon }: { r: RunOut; horizon: number }) {
       <div className="relative h-7">
         <div className="absolute inset-x-0 top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-[repeating-linear-gradient(90deg,#eef2ec_0_6px,#e3e9e1_6px_12px)]" />
         <div
-          className={cn("absolute top-1/2 left-0 h-2.5 -translate-y-1/2 rounded-full bg-gradient-to-r", critical ? "from-alert to-[#f58a6b]" : "from-watch to-[#f6cc72]")}
+          className={cn(
+            "absolute top-1/2 left-0 h-2.5 -translate-y-1/2 rounded-full bg-gradient-to-r",
+            critical ? "from-alert to-[#f58a6b]" : "from-watch to-[#f6cc72]",
+          )}
           style={{ width: pct(r.daysLeft) }}
         />
-        <div className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: pct(r.leadTimeDays) }} title={t("runout.restock", { n: r.leadTimeDays })}>
+        <div
+          className="absolute top-0 bottom-0 flex flex-col items-center"
+          style={{ left: pct(r.leadTimeDays) }}
+          title={t("runout.restock", { n: r.leadTimeDays })}
+        >
           <span aria-hidden className="h-full w-0.5 -translate-x-1/2 rounded bg-ink/50" />
         </div>
         <span
-          className={cn("tabular absolute top-1/2 -translate-y-1/2 pl-2 text-xs font-semibold", critical ? "text-alert-ink" : "text-watch-ink")}
+          className={cn(
+            "tabular absolute top-1/2 -translate-y-1/2 pl-2 text-xs font-semibold",
+            critical ? "text-alert-ink" : "text-watch-ink",
+          )}
           style={{ left: pct(r.daysLeft) }}
         >
           {Math.max(0, Math.round(r.daysLeft))}d
@@ -145,7 +158,13 @@ export function StockOutTile({ view, className }: { view: DistrictView; classNam
         <p className="py-10 text-center text-sm text-ink-muted">{t("runout.empty")}</p>
       ) : (
         <>
-          {featured.length > 0 && <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{featured.map((r) => <Countdown key={`${r.facilityId}-${r.medicineId}`} r={r} />)}</ul>}
+          {featured.length > 0 && (
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {featured.map((r) => (
+                <Countdown key={`${r.facilityId}-${r.medicineId}`} r={r} />
+              ))}
+            </ul>
+          )}
 
           {rest.length > 0 && (
             <div className="mt-6">
@@ -155,9 +174,17 @@ export function StockOutTile({ view, className }: { view: DistrictView; classNam
                   <span aria-hidden className="h-3 w-0.5 rounded bg-ink/50" /> {t("runout.restockMark")}
                 </p>
               </div>
-              <ul className="divide-y divide-line">{shown.map((r) => <Runway key={`${r.facilityId}-${r.medicineId}`} r={r} horizon={horizon} />)}</ul>
+              <ul className="divide-y divide-line">
+                {shown.map((r) => (
+                  <Runway key={`${r.facilityId}-${r.medicineId}`} r={r} horizon={horizon} />
+                ))}
+              </ul>
               {rest.length > LIST_COLLAPSED && (
-                <button type="button" onClick={() => setExpanded(!expanded)} className="mt-2 text-sm font-medium text-brand hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(!expanded)}
+                  className="mt-2 text-sm font-medium text-brand hover:underline"
+                >
                   {expanded ? t("common.close") : t("runout.more", { n: rest.length - LIST_COLLAPSED })}
                 </button>
               )}

@@ -2,7 +2,13 @@
 
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { ActivitySection, MedicinesSection, PatientsSection, RightNowSection, TestsSection } from "@/components/facilities/facility-sections";
+import {
+  ActivitySection,
+  MedicinesSection,
+  PatientsSection,
+  RightNowSection,
+  TestsSection,
+} from "@/components/facilities/facility-sections";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useDistrict } from "@/features/district/use-district";
 import { useI18n } from "@/i18n/provider";
@@ -38,7 +44,11 @@ export function FacilityView({ id }: { id: string }) {
         <div role="alert" className="card mx-auto max-w-md p-8 text-center">
           <h1 className="font-display text-xl font-semibold">{t("common.errorTitle")}</h1>
           <p className="mt-2 text-sm text-ink-muted">{state.message}</p>
-          <button type="button" onClick={reload} className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-white">
+          <button
+            type="button"
+            onClick={reload}
+            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-white"
+          >
             <RefreshCw aria-hidden className="size-4" /> {t("common.retry")}
           </button>
         </div>
@@ -68,7 +78,11 @@ export function FacilityView({ id }: { id: string }) {
               {state.detail.assessment.signals.map((s, i) => (
                 <li
                   key={`${s.domain}-${s.ref ?? i}`}
-                  className={s.severity === "critical" ? "rounded-full bg-alert-soft px-3 py-1.5 text-sm text-alert-ink" : "rounded-full bg-watch-soft px-3 py-1.5 text-sm text-watch-ink"}
+                  className={
+                    s.severity === "critical"
+                      ? "rounded-full bg-alert-soft px-3 py-1.5 text-sm text-alert-ink"
+                      : "rounded-full bg-watch-soft px-3 py-1.5 text-sm text-watch-ink"
+                  }
                 >
                   {signal(s)}
                 </li>

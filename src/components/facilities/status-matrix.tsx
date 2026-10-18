@@ -15,7 +15,9 @@ const RANK: Record<Severity, number> = { critical: 0, warning: 1, healthy: 2 };
 /** One row per centre, one square per area of care, coloured by the worst signal in that area. */
 export function StatusMatrix({ view, className }: { view: DistrictView; className?: string }) {
   const { t } = useI18n();
-  const rows = [...view.facilities].sort((a, b) => RANK[a.assessment.status] - RANK[b.assessment.status] || a.facility.name.localeCompare(b.facility.name));
+  const rows = [...view.facilities].sort(
+    (a, b) => RANK[a.assessment.status] - RANK[b.assessment.status] || a.facility.name.localeCompare(b.facility.name),
+  );
   const bars = view.footfallSeries;
   const max = Math.max(...view.footfallSeries, 1);
 
@@ -49,7 +51,10 @@ export function StatusMatrix({ view, className }: { view: DistrictView; classNam
                 <th scope="row" className="py-[3px] pr-3 text-left font-normal">
                   <Link
                     href={`/facilities/${facility.id}`}
-                    className={cn("truncate transition-colors group-hover:text-brand", assessment.status === "healthy" ? "text-ink-muted" : SEVERITY_META[assessment.status].ink)}
+                    className={cn(
+                      "truncate transition-colors group-hover:text-brand",
+                      assessment.status === "healthy" ? "text-ink-muted" : SEVERITY_META[assessment.status].ink,
+                    )}
                   >
                     {facility.name}
                   </Link>
@@ -88,7 +93,11 @@ export function StatusMatrix({ view, className }: { view: DistrictView; classNam
         </p>
         <div aria-hidden className="flex h-14 items-end gap-[3px]">
           {bars.map((b, i) => (
-            <span key={i} className={cn("flex-1 rounded-t-[3px]", i === bars.length - 1 ? "bg-forest" : "bg-mint/70")} style={{ height: `${Math.max(12, (b / max) * 100)}%` }} />
+            <span
+              key={i}
+              className={cn("flex-1 rounded-t-[3px]", i === bars.length - 1 ? "bg-forest" : "bg-mint/70")}
+              style={{ height: `${Math.max(12, (b / max) * 100)}%` }}
+            />
           ))}
         </div>
       </div>

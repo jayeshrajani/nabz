@@ -6,23 +6,25 @@ export const MAX_FACILITIES_PER_DISTRICT = 50;
 const id = z.string().regex(/^[a-z0-9-]{1,64}$/);
 const count = z.number().int().nonnegative();
 
-export const FacilityTypeSchema = z.enum(["PHC", "CHC"]);
+const FacilityTypeSchema = z.enum(["PHC", "CHC"]);
 
-export const MedicineStockSchema = z.object({
-  id,
-  name: z.string().min(1).max(120),
-  unit: z.string().min(1).max(32),
-  essential: z.boolean(),
-  quantity: count,
-  /** Units held for approved outgoing transfers; always <= quantity. */
-  reserved: count.default(0),
-  reorderLevel: count,
-  leadTimeDays: z.number().int().min(1).max(60),
-  /** Units consumed per day, oldest first. */
-  dailyConsumption: z.array(count).max(MAX_HISTORY_DAYS),
-}).refine((m) => m.reserved <= m.quantity, { message: "reserved stock cannot exceed quantity" });
+const MedicineStockSchema = z
+  .object({
+    id,
+    name: z.string().min(1).max(120),
+    unit: z.string().min(1).max(32),
+    essential: z.boolean(),
+    quantity: count,
+    /** Units held for approved outgoing transfers; always <= quantity. */
+    reserved: count.default(0),
+    reorderLevel: count,
+    leadTimeDays: z.number().int().min(1).max(60),
+    /** Units consumed per day, oldest first. */
+    dailyConsumption: z.array(count).max(MAX_HISTORY_DAYS),
+  })
+  .refine((m) => m.reserved <= m.quantity, { message: "reserved stock cannot exceed quantity" });
 
-export const DiagnosticTestSchema = z.object({
+const DiagnosticTestSchema = z.object({
   id,
   name: z.string().min(1).max(120),
   available: z.boolean(),
@@ -30,11 +32,11 @@ export const DiagnosticTestSchema = z.object({
   dailyUsage: z.number().nonnegative(),
 });
 
-export const BedStatusSchema = z
+const BedStatusSchema = z
   .object({ total: count, occupied: count })
   .refine((b) => b.occupied <= b.total, { message: "occupied beds cannot exceed total beds" });
 
-export const StaffingSchema = z
+const StaffingSchema = z
   .object({ scheduled: count, present: count })
   .refine((s) => s.present <= s.scheduled, { message: "present doctors cannot exceed scheduled" });
 

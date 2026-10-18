@@ -55,7 +55,12 @@ export function AssistantDrawer() {
                 </h2>
                 <p className="mt-1 text-sm text-white/65">{t("assistant.subtitle")}</p>
               </div>
-              <button type="button" aria-label={t("common.close")} onClick={() => setOpen(false)} className="rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white">
+              <button
+                type="button"
+                aria-label={t("common.close")}
+                onClick={() => setOpen(false)}
+                className="rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white"
+              >
                 <X aria-hidden className="size-5" />
               </button>
             </header>

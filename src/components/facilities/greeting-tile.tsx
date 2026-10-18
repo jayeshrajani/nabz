@@ -23,7 +23,12 @@ export function GreetingTile({ view, className }: { view: DistrictView; classNam
       tone="dark"
       className={className}
       aside={
-        <button type="button" aria-label={t("nav.ask")} onClick={() => setOpen(true)} className="rounded-full p-1.5 text-white/50 hover:bg-white/10 hover:text-white">
+        <button
+          type="button"
+          aria-label={t("nav.ask")}
+          onClick={() => setOpen(true)}
+          className="rounded-full p-1.5 text-white/50 hover:bg-white/10 hover:text-white"
+        >
           <Maximize2 aria-hidden className="size-4" />
         </button>
       }

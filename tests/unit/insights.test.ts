@@ -36,7 +36,10 @@ describe("history helpers", () => {
   it("sums medicine use across the district", () => {
     const trends = consumptionTrends(view);
     const ors = trends.find((t) => t.medicineId === "ors-sachet")!;
-    const expected = view.facilities.reduce((s, { facility }) => s + facility.medicines.find((m) => m.id === "ors-sachet")!.dailyConsumption.at(-1)!, 0);
+    const expected = view.facilities.reduce(
+      (s, { facility }) => s + facility.medicines.find((m) => m.id === "ors-sachet")!.dailyConsumption.at(-1)!,
+      0,
+    );
     expect(ors.series.at(-1)).toBe(expected);
     expect(ors.series).toHaveLength(30);
   });

@@ -10,8 +10,17 @@ import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 import { isCount, NumberField, UpdateForm, type Submit } from "./update-form";
 
-
-function Card({ title, aside, children, className }: { title: string; aside?: React.ReactNode; children: React.ReactNode; className?: string }) {
+function Card({
+  title,
+  aside,
+  children,
+  className,
+}: {
+  title: string;
+  aside?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
   const id = `card-${title.toLowerCase().replace(/\W+/g, "-")}`;
   return (
     <section aria-labelledby={id} className={cn("card p-6", className)}>
@@ -39,12 +48,18 @@ export function PatientsSection({ detail, submit }: { detail: FacilityDetail; su
     <Card
       title={t("patients.title")}
       className="lg:col-span-8"
-      aside={footfall.surge ? <span className="rounded-full bg-watch-soft px-2.5 py-0.5 text-xs font-medium text-watch-ink">{t("patients.busier")}</span> : null}
+      aside={
+        footfall.surge ? (
+          <span className="rounded-full bg-watch-soft px-2.5 py-0.5 text-xs font-medium text-watch-ink">{t("patients.busier")}</span>
+        ) : null
+      }
     >
       <div className="flex flex-wrap items-end gap-x-10 gap-y-3">
         <div>
           <p className="tabular font-display text-4xl font-semibold">{footfall.today ?? "n/a"}</p>
-          <p className="text-sm text-ink-muted">{footfall.usual !== null ? t("patients.todayUsual", { n: Math.round(footfall.usual) }) : t("hero.today")}</p>
+          <p className="text-sm text-ink-muted">
+            {footfall.usual !== null ? t("patients.todayUsual", { n: Math.round(footfall.usual) }) : t("hero.today")}
+          </p>
         </div>
         {avgNext !== null && (
           <p className="max-w-xs text-sm text-ink-muted">
@@ -70,7 +85,10 @@ export function PatientsSection({ detail, submit }: { detail: FacilityDetail; su
 function Meter({ value, max, tone }: { value: number; max: number; tone: string }) {
   return (
     <div aria-hidden className="h-2 overflow-hidden rounded-full bg-surface-2">
-      <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${max ? Math.min(100, (value / max) * 100) : 0}%`, background: tone }} />
+      <div
+        className="h-full rounded-full transition-[width] duration-500"
+        style={{ width: `${max ? Math.min(100, (value / max) * 100) : 0}%`, background: tone }}
+      />
     </div>
   );
 }
@@ -102,7 +120,11 @@ export function RightNowSection({ detail, submit }: { detail: FacilityDetail; su
             className="mt-3"
             label={t("common.save")}
             build={() =>
-              !isCount(occupied) || !isCount(total) ? t("common.wholeNumbers") : occupied > total ? t("common.wholeNumbers") : { kind: "beds", occupied, total }
+              !isCount(occupied) || !isCount(total)
+                ? t("common.wholeNumbers")
+                : occupied > total
+                  ? t("common.wholeNumbers")
+                  : { kind: "beds", occupied, total }
             }
           >
             <NumberField label={t("rightNow.occupied")} value={occupied} onChange={setOccupied} max={total} className="w-24" />
@@ -179,7 +201,12 @@ function StockForm({ medicine, submit }: { medicine: MedicineStock; submit: Subm
           </button>
         ))}
       </div>
-      <NumberField label={movement === "count" ? `${medicine.unit}, ${t("medicines.onShelf")}` : medicine.unit} value={quantity} onChange={setQuantity} className="w-32" />
+      <NumberField
+        label={movement === "count" ? `${medicine.unit}, ${t("medicines.onShelf")}` : medicine.unit}
+        value={quantity}
+        onChange={setQuantity}
+        className="w-32"
+      />
     </UpdateForm>
   );
 }
@@ -202,7 +229,13 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
     <Card
       title={t("medicines.title")}
       className="lg:col-span-8"
-      aside={toOrder > 0 ? <span className="text-sm text-ink-muted">{t("medicines.reorder", { n: toOrder })}</span> : <span className="text-sm text-ink-muted">{t("medicines.fine")}</span>}
+      aside={
+        toOrder > 0 ? (
+          <span className="text-sm text-ink-muted">{t("medicines.reorder", { n: toOrder })}</span>
+        ) : (
+          <span className="text-sm text-ink-muted">{t("medicines.fine")}</span>
+        )
+      }
     >
       <ul className="divide-y divide-line">
         {detail.facility.medicines.map((m) => {
@@ -222,7 +255,9 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
                 <p className="tabular hidden text-sm text-ink-muted sm:block">
                   {number(m.quantity)} {m.unit}
                 </p>
-                <p className={cn("tabular hidden text-sm sm:block", sev ? `font-medium ${SEVERITY_META[sev].ink}` : "text-ink-muted")}>{lasts(f, t)}</p>
+                <p className={cn("tabular hidden text-sm sm:block", sev ? `font-medium ${SEVERITY_META[sev].ink}` : "text-ink-muted")}>
+                  {lasts(f, t)}
+                </p>
                 <button
                   type="button"
                   aria-expanded={isOpen}
@@ -232,7 +267,8 @@ export function MedicinesSection({ detail, submit }: { detail: FacilityDetail; s
                   {isOpen ? t("common.close") : t("common.update")}
                 </button>
                 <p className="col-span-2 text-xs text-ink-muted sm:hidden">
-                  {number(m.quantity)} {m.unit}, <span className={sev ? SEVERITY_META[sev].ink : undefined}>{lasts(f, t).toLowerCase()}</span>
+                  {number(m.quantity)} {m.unit},{" "}
+                  <span className={sev ? SEVERITY_META[sev].ink : undefined}>{lasts(f, t).toLowerCase()}</span>
                 </p>
               </div>
               {isOpen && <StockForm medicine={m} submit={submit} />}
@@ -256,7 +292,9 @@ function TestRow({ test, submit }: { test: FacilityDetail["facility"]["diagnosti
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{test.name}</p>
-          <p className={cn("text-xs", working ? "text-ink-muted" : "font-medium text-alert-ink")}>{working ? t("tests.kits", { n: number(test.kitsRemaining) }) : t("tests.unavailable")}</p>
+          <p className={cn("text-xs", working ? "text-ink-muted" : "font-medium text-alert-ink")}>
+            {working ? t("tests.kits", { n: number(test.kitsRemaining) }) : t("tests.unavailable")}
+          </p>
         </div>
         <button
           type="button"
@@ -288,7 +326,11 @@ export function TestsSection({ detail, submit }: { detail: FacilityDetail; submi
   const { t } = useI18n();
   const down = detail.facility.diagnostics.filter((t) => !t.available || t.kitsRemaining === 0).length;
   return (
-    <Card title={t("tests.title")} className="lg:col-span-4" aside={<span className="text-sm text-ink-muted">{down ? t("tests.down", { n: down }) : t("tests.allRunning")}</span>}>
+    <Card
+      title={t("tests.title")}
+      className="lg:col-span-4"
+      aside={<span className="text-sm text-ink-muted">{down ? t("tests.down", { n: down }) : t("tests.allRunning")}</span>}
+    >
       <ul className="divide-y divide-line">
         {detail.facility.diagnostics.map((t) => (
           <TestRow key={t.id} test={t} submit={submit} />

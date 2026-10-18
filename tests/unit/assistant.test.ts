@@ -67,7 +67,13 @@ describe("answerQuestion", () => {
   it("rejects AI answers with fabricated numbers or unknown centres and degrades gracefully", async () => {
     const invented = await answerQuestion(view, "stock?", "en", [fake({ answer: "Order 4815162342 vials.", facts: [] })], 1000);
     expect(invented.source).toBe("computed");
-    const ghost = await answerQuestion(view, "x", "en", [fake({ answer: "ok", facts: [{ text: "x", kind: "recorded", facilityId: "phc-ghost" }] })], 1000);
+    const ghost = await answerQuestion(
+      view,
+      "x",
+      "en",
+      [fake({ answer: "ok", facts: [{ text: "x", kind: "recorded", facilityId: "phc-ghost" }] })],
+      1000,
+    );
     expect(ghost.source).toBe("computed");
   });
 });

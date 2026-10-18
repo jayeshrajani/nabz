@@ -17,7 +17,10 @@ export function Sparkline({
   const max = Math.max(...values);
   const span = max - min || 1;
   const d = values
-    .map((v, i) => `${i ? "L" : "M"}${((i / (values.length - 1)) * width).toFixed(1)} ${(2 + (1 - (v - min) / span) * (height - 4)).toFixed(1)}`)
+    .map(
+      (v, i) =>
+        `${i ? "L" : "M"}${((i / (values.length - 1)) * width).toFixed(1)} ${(2 + (1 - (v - min) / span) * (height - 4)).toFixed(1)}`,
+    )
     .join(" ");
   const last = values.at(-1)!;
   return (

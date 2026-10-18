@@ -20,7 +20,8 @@ export function useFacility(id: string) {
       .then(() => apiRequest<FacilityDetail>(`/api/facilities/${encodeURIComponent(id)}`))
       .then(
         (detail) => !cancelled && setState({ status: "ready", detail }),
-        (error: unknown) => !cancelled && setState({ status: "error", message: error instanceof Error ? error.message : "Unable to load this centre." }),
+        (error: unknown) =>
+          !cancelled && setState({ status: "error", message: error instanceof Error ? error.message : "Unable to load this centre." }),
       );
     return () => {
       cancelled = true;

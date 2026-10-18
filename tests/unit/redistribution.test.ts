@@ -63,8 +63,12 @@ describe("transfer lifecycle", () => {
   it("rejects invalid transitions and over-surplus requests", () => {
     const t0 = createTransfer(request, donor, receiver, { ...ctx, id: "transfer-0002" });
     expect(() => applyTransferAction(t0, donor, receiver, "receive", ctx)).toThrow(DomainRuleError);
-    expect(() => createTransfer({ ...request, quantity: stock(donor).quantity }, donor, receiver, { ...ctx, id: "transfer-0003" })).toThrow(DomainRuleError);
-    expect(() => createTransfer({ ...request, toFacilityId: donor.id }, donor, donor, { ...ctx, id: "transfer-0004" })).toThrow(DomainRuleError);
+    expect(() => createTransfer({ ...request, quantity: stock(donor).quantity }, donor, receiver, { ...ctx, id: "transfer-0003" })).toThrow(
+      DomainRuleError,
+    );
+    expect(() => createTransfer({ ...request, toFacilityId: donor.id }, donor, donor, { ...ctx, id: "transfer-0004" })).toThrow(
+      DomainRuleError,
+    );
   });
 
   it("releases the reservation on cancel after approval", () => {
@@ -96,7 +100,9 @@ describe("repository transfers", () => {
       (await repo.getSnapshot("s1"))!.facilities.find((f) => f.id === s.fromFacilityId)!.medicines.find((m) => m.id === s.medicineId)!,
     );
     if (surplusLeft < s.quantity) {
-      await expect(repo.advanceTransfer("s1", { transferId: second.transfer.id, action: "approve", actorUid: "u" })).rejects.toBeInstanceOf(DomainRuleError);
+      await expect(repo.advanceTransfer("s1", { transferId: second.transfer.id, action: "approve", actorUid: "u" })).rejects.toBeInstanceOf(
+        DomainRuleError,
+      );
     }
 
     await repo.advanceTransfer("s1", { transferId: created.transfer.id, action: "dispatch", actorUid: "u" });

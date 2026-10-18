@@ -10,6 +10,10 @@ export const POST = apiHandler("transfer.create", async ({ request }) => {
   const principal = await authorize(request, "facility:write", "write");
   const key = idempotencyKey(request);
   const body = await readJson(request, TransferRequestSchema);
-  const outcome = await getRepository().createTransfer(principal.sessionId, { request: body, actorUid: principal.uid, idempotencyKey: key });
+  const outcome = await getRepository().createTransfer(principal.sessionId, {
+    request: body,
+    actorUid: principal.uid,
+    idempotencyKey: key,
+  });
   return { transfer: outcome.transfer, replayed: outcome.replayed, view: await loadDistrictView(principal.sessionId) };
 });
