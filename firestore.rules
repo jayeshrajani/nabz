@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Operational data is server-mediated: Next.js route handlers use the Admin SDK after verifying
+// the caller's ID token and scoping every read/write to their session. Clients get no direct access.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
